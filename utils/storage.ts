@@ -125,7 +125,7 @@ export const StorageUtils = {
       return data ? JSON.parse(data) : { 
         language: 'en', 
         theme: 'light', 
-        currency: 'INR',
+        currency: 'USD',
         hasCompletedOnboarding: false
       };
     } catch (error) {
@@ -133,7 +133,7 @@ export const StorageUtils = {
       return { 
         language: 'en', 
         theme: 'light', 
-        currency: 'INR',
+        currency: 'USD',
         hasCompletedOnboarding: false
       };
     }
