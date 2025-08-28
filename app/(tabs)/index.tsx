@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Users, UserCheck, UserX, Clock, IndianRupee, Plus, Download, TrendingUp } from 'lucide-react-native';
+import { Users, UserCheck, UserX, Clock, Banknote, Plus, Download, TrendingUp } from 'lucide-react-native';
 import { useData } from '@/contexts/DataContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { StatsCard } from '@/components/StatsCard';
@@ -100,7 +100,7 @@ export default function DashboardScreen() {
           <StatsCard
             title={t('totalPaid')}
             value={CalculationUtils.formatCurrency(totalPaidAmount, settings.currency)}
-            icon={<IndianRupee size={20} color="#2563eb" />}
+            icon={<Banknote size={20} color="#2563eb" />}
             color="#2563eb"
             theme={settings.theme}
           />
