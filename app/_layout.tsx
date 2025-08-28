@@ -1,18 +1,15 @@
-import { useEffect } from 'react';
-import { Redirect, Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { router } from 'expo-router';
-import { useFrameworkReady } from '@/hooks/useFrameworkReady';
-import { DataProvider, useData } from '@/contexts/DataContext';
+import { Stack, Redirect } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useFrameworkReady } from "@/hooks/useFrameworkReady";
+import { DataProvider, useData } from "@/contexts/DataContext";
 
 function RootLayoutContent() {
   const { settings } = useData();
 
-  useEffect(() => {
-    if (!settings.hasCompletedOnboarding) {
-        return <Redirect href="/onboarding" />;
-      }
-  }, [settings.hasCompletedOnboarding]);
+  // If onboarding is not completed, redirect before navigation tree mounts
+  if (!settings.hasCompletedOnboarding) {
+    return <Redirect href="/onboarding" />;
+  }
 
   return (
     <>
@@ -21,7 +18,7 @@ function RootLayoutContent() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="+not-found" />
       </Stack>
-      <StatusBar style={settings.theme === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style={settings.theme === "dark" ? "light" : "dark"} />
     </>
   );
 }
