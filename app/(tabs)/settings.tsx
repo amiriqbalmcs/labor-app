@@ -37,7 +37,7 @@ export default function SettingsScreen() {
     updateSettings({ ...settings, language });
   };
 
-  const handleCurrencyChange = (currency: 'INR' | 'USD' | 'EUR' | 'GBP' | 'PKR' ) => {
+  const handleCurrencyChange = (currency: 'PKR' | 'INR' | 'USD' | 'EUR' | 'GBP') => {
     updateSettings({ ...settings, currency });
   };
 
@@ -57,7 +57,7 @@ export default function SettingsScreen() {
       setExporting(false);
     }
   };
-
+  
   const handleExportReport = async () => {
     try {
       setExporting(true);
