@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     margin: 4,
-    marginRight: 0,
+    marginRight: 10,
   },
   darkContainer: {
     backgroundColor: '#1f2937',
