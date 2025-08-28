@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FileText, Calendar, Filter, TrendingUp, IndianRupee, Users, Download, X } from 'lucide-react-native';
+import { FileText, Calendar, Filter, TrendingUp, Banknote, Users, Download, X } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useData } from '@/contexts/DataContext';
 import { useTranslation } from '@/utils/translations';
@@ -240,7 +240,7 @@ export default function ReportsScreen() {
           <StatsCard
             title={t('totalPaid')}
             value={CalculationUtils.formatCurrency(reportData.totalPaid, settings.currency)}
-            icon={<IndianRupee size={20} color="#2563eb" />}
+            icon={<Banknote size={20} color="#2563eb" />}
             color="#2563eb"
             theme={settings.theme}
           />
@@ -250,7 +250,7 @@ export default function ReportsScreen() {
           <StatsCard
             title={t('pendingAmount')}
             value={CalculationUtils.formatCurrency(reportData.totalPending, settings.currency)}
-            icon={<IndianRupee size={20} color="#dc2626" />}
+            icon={<Banknote size={20} color="#dc2626" />}
             color="#dc2626"
             theme={settings.theme}
           />
