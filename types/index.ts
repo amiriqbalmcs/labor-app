@@ -47,7 +47,7 @@ export interface DashboardStats {
 export interface AppSettings {
   language: 'en' | 'ur' | 'hi';
   theme: 'light' | 'dark';
-  currency: 'INR' | 'USD' | 'EUR' | 'GBP';
+  currency: 'PKR', 'INR' | 'USD' | 'EUR' | 'GBP';
   hasCompletedOnboarding: boolean;
 }
 
