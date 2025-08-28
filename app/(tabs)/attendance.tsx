@@ -8,9 +8,11 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Card } from '@/components/Card';
 import { Labor } from '@/types';
 import { CalculationUtils } from '@/utils/calculations';
+import { useTranslation } from '@/utils/translations';
 
 export default function AttendanceScreen() {
-  const { labors, attendanceRecords, markAttendance, isLoading } = useData();
+  const { labors, attendanceRecords, markAttendance, isLoading, settings } = useData();
+  const { t } = useTranslation(settings.language);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedLabor, setSelectedLabor] = useState<Labor | null>(null);
@@ -32,11 +34,10 @@ export default function AttendanceScreen() {
       setModalVisible(false);
       setSelectedLabor(null);
     } catch (error) {
-      Alert.alert('Error', 'Failed to mark attendance');
+      Alert.alert(t('error'), 'Failed to mark attendance');
     }
   };
 
-  // ✅ Fixed: renamed parameter to `date`
   const onDateChange = (event: any, date?: Date) => {
     if (Platform.OS === 'android') {
       setShowDatePicker(false);
@@ -83,22 +84,21 @@ export default function AttendanceScreen() {
   const halfCount = todayAttendance.filter(a => a.status === 'half').length;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Attendance</Text>
-          <Text style={styles.subtitle}>{CalculationUtils.formatDate(selectedDate)}</Text>
+          <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('attendance')}</Text>
+          <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>{CalculationUtils.formatDate(selectedDate)}</Text>
         </View>
         <TouchableOpacity
-          style={styles.dateButton}
+          style={[styles.dateButton, settings.theme === 'dark' && styles.darkDateButton]}
           onPress={() => setShowDatePicker(true)}
         >
           <Calendar size={20} color="#2563eb" />
-          <Text style={styles.dateButtonText}>Change Date</Text>
+          <Text style={styles.dateButtonText}>{t('changeDate')}</Text>
         </TouchableOpacity>
       </View>
 
-      {/* ✅ Single date picker logic */}
       {showDatePicker && Platform.OS === 'android' && (
         <DateTimePicker
           value={new Date(selectedDate)}
@@ -111,14 +111,14 @@ export default function AttendanceScreen() {
 
       {Platform.OS === 'ios' && (
         <Modal visible={showDatePicker} animationType="slide" presentationStyle="pageSheet">
-          <SafeAreaView style={styles.datePickerModal}>
-            <View style={styles.datePickerHeader}>
+          <SafeAreaView style={[styles.datePickerModal, settings.theme === 'dark' && styles.darkContainer]}>
+            <View style={[styles.datePickerHeader, settings.theme === 'dark' && { borderBottomColor: '#374151' }]}>
               <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                <Text style={styles.datePickerCancel}>Cancel</Text>
+                <Text style={[styles.datePickerCancel, settings.theme === 'dark' && styles.darkSubtext]}>{t('cancel')}</Text>
               </TouchableOpacity>
-              <Text style={styles.datePickerTitle}>Select Date</Text>
+              <Text style={[styles.datePickerTitle, settings.theme === 'dark' && styles.darkText]}>{t('selectDate')}</Text>
               <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                <Text style={styles.datePickerDone}>Done</Text>
+                <Text style={styles.datePickerDone}>{t('save')}</Text>
               </TouchableOpacity>
             </View>
             <DateTimePicker
@@ -135,14 +135,14 @@ export default function AttendanceScreen() {
 
       <View style={styles.dateNavigation}>
         <TouchableOpacity
-          style={styles.navButton}
+          style={[styles.navButton, settings.theme === 'dark' && styles.darkNavButton]}
           onPress={() => {
             const currentDate = new Date(selectedDate);
             currentDate.setDate(currentDate.getDate() - 1);
             setSelectedDate(currentDate.toISOString().split('T')[0]);
           }}
         >
-          <Text style={styles.navButtonText}>← Previous</Text>
+          <Text style={[styles.navButtonText, settings.theme === 'dark' && styles.darkText]}>← Previous</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -156,7 +156,7 @@ export default function AttendanceScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.navButton}
+          style={[styles.navButton, settings.theme === 'dark' && styles.darkNavButton]}
           onPress={() => {
             const currentDate = new Date(selectedDate);
             const today = new Date();
@@ -166,34 +166,34 @@ export default function AttendanceScreen() {
             }
           }}
         >
-          <Text style={styles.navButtonText}>Next →</Text>
+          <Text style={[styles.navButtonText, settings.theme === 'dark' && styles.darkText]}>Next →</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.summaryContainer}>
+      <View style={[styles.summaryContainer, settings.theme === 'dark' && styles.darkCard]}>
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryCount}>{presentCount}</Text>
-          <Text style={styles.summaryLabel}>Present</Text>
+          <Text style={[styles.summaryCount, settings.theme === 'dark' && styles.darkText]}>{presentCount}</Text>
+          <Text style={[styles.summaryLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('present')}</Text>
         </View>
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryCount}>{halfCount}</Text>
-          <Text style={styles.summaryLabel}>Half Day</Text>
+          <Text style={[styles.summaryCount, settings.theme === 'dark' && styles.darkText]}>{halfCount}</Text>
+          <Text style={[styles.summaryLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('halfDay')}</Text>
         </View>
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryCount}>{absentCount}</Text>
-          <Text style={styles.summaryLabel}>Absent</Text>
+          <Text style={[styles.summaryCount, settings.theme === 'dark' && styles.darkText]}>{absentCount}</Text>
+          <Text style={[styles.summaryLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('absent')}</Text>
         </View>
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryCount}>{labors.length - todayAttendance.length}</Text>
-          <Text style={styles.summaryLabel}>Unmarked</Text>
+          <Text style={[styles.summaryCount, settings.theme === 'dark' && styles.darkText]}>{labors.length - todayAttendance.length}</Text>
+          <Text style={[styles.summaryLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('unmarked')}</Text>
         </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {labors.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>No labors available</Text>
-            <Text style={styles.emptyStateSubtext}>Add labors first to mark attendance</Text>
+            <Text style={[styles.emptyStateText, settings.theme === 'dark' && styles.darkText]}>No labors available</Text>
+            <Text style={[styles.emptyStateSubtext, settings.theme === 'dark' && styles.darkSubtext]}>Add labors first to mark attendance</Text>
           </View>
         ) : (
           labors.map((labor) => {
@@ -201,7 +201,7 @@ export default function AttendanceScreen() {
             const isMarked = !!attendance;
 
             return (
-              <Card key={labor.id} style={styles.laborCard}>
+              <Card key={labor.id} style={[styles.laborCard, settings.theme === 'dark' && styles.darkCard]}>
                 <TouchableOpacity
                   style={styles.laborRow}
                   onPress={() => {
@@ -210,9 +210,9 @@ export default function AttendanceScreen() {
                   }}
                 >
                   <View style={styles.laborInfo}>
-                    <Text style={styles.laborName}>{labor.name}</Text>
-                    <Text style={styles.laborWage}>
-                      {CalculationUtils.formatCurrency(labor.dailyWage)}/day
+                    <Text style={[styles.laborName, settings.theme === 'dark' && styles.darkText]}>{labor.name}</Text>
+                    <Text style={[styles.laborWage, settings.theme === 'dark' && styles.darkSubtext]}>
+                      {CalculationUtils.formatCurrency(labor.dailyWage, settings.currency)}/day
                     </Text>
                   </View>
 
@@ -222,16 +222,16 @@ export default function AttendanceScreen() {
                         {getStatusIcon(attendance.status)}
                         <View style={styles.statusInfo}>
                           <Text style={[styles.statusText, { color: getStatusColor(attendance.status) }]}>
-                            {attendance.status.charAt(0).toUpperCase() + attendance.status.slice(1)}
+                            {t(attendance.status)}
                           </Text>
-                          <Text style={styles.wageText}>
-                            {CalculationUtils.formatCurrency(attendance.wage)}
+                          <Text style={[styles.wageText, settings.theme === 'dark' && styles.darkSubtext]}>
+                            {CalculationUtils.formatCurrency(attendance.wage, settings.currency)}
                           </Text>
                         </View>
                       </>
                     ) : (
-                      <View style={styles.unmarkedStatus}>
-                        <Text style={styles.unmarkedText}>Tap to mark</Text>
+                      <View style={[styles.unmarkedStatus, settings.theme === 'dark' && styles.darkUnmarkedStatus]}>
+                        <Text style={[styles.unmarkedText, settings.theme === 'dark' && styles.darkSubtext]}>{t('tapToMark')}</Text>
                       </View>
                     )}
                   </View>
@@ -244,22 +244,22 @@ export default function AttendanceScreen() {
 
       {/* Attendance Marking Modal */}
       <Modal visible={modalVisible} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Mark Attendance</Text>
+        <SafeAreaView style={[styles.modalContainer, settings.theme === 'dark' && styles.darkContainer]}>
+          <View style={[styles.modalHeader, settings.theme === 'dark' && { borderBottomColor: '#374151' }]}>
+            <Text style={[styles.modalTitle, settings.theme === 'dark' && styles.darkText]}>{t('markAttendance')}</Text>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <X size={24} color="#6b7280" />
+              <X size={24} color={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'} />
             </TouchableOpacity>
           </View>
 
           {selectedLabor && (
             <View style={styles.modalContent}>
-              <View style={styles.laborDetail}>
-                <Text style={styles.laborDetailName}>{selectedLabor.name}</Text>
-                <Text style={styles.laborDetailWage}>
-                  Daily Wage: {CalculationUtils.formatCurrency(selectedLabor.dailyWage)}
+              <View style={[styles.laborDetail, settings.theme === 'dark' && styles.darkLaborDetail]}>
+                <Text style={[styles.laborDetailName, settings.theme === 'dark' && styles.darkText]}>{selectedLabor.name}</Text>
+                <Text style={[styles.laborDetailWage, settings.theme === 'dark' && styles.darkSubtext]}>
+                  {t('dailyWage')}: {CalculationUtils.formatCurrency(selectedLabor.dailyWage, settings.currency)}
                 </Text>
-                <Text style={styles.laborDetailDate}>
+                <Text style={[styles.laborDetailDate, settings.theme === 'dark' && styles.darkSubtext]}>
                   Date: {CalculationUtils.formatDate(selectedDate)}
                 </Text>
               </View>
@@ -270,9 +270,9 @@ export default function AttendanceScreen() {
                   onPress={() => handleAttendanceMark('present')}
                 >
                   <CheckCircle size={24} color="#ffffff" />
-                  <Text style={styles.optionButtonText}>Present</Text>
+                  <Text style={styles.optionButtonText}>{t('present')}</Text>
                   <Text style={styles.optionWageText}>
-                    {CalculationUtils.formatCurrency(selectedLabor.dailyWage)}
+                    {CalculationUtils.formatCurrency(selectedLabor.dailyWage, settings.currency)}
                   </Text>
                 </TouchableOpacity>
 
@@ -281,9 +281,9 @@ export default function AttendanceScreen() {
                   onPress={() => handleAttendanceMark('half')}
                 >
                   <Clock size={24} color="#ffffff" />
-                  <Text style={styles.optionButtonText}>Half Day</Text>
+                  <Text style={styles.optionButtonText}>{t('halfDay')}</Text>
                   <Text style={styles.optionWageText}>
-                    {CalculationUtils.formatCurrency(selectedLabor.dailyWage / 2)}
+                    {CalculationUtils.formatCurrency(selectedLabor.dailyWage / 2, settings.currency)}
                   </Text>
                 </TouchableOpacity>
 
@@ -292,8 +292,10 @@ export default function AttendanceScreen() {
                   onPress={() => handleAttendanceMark('absent')}
                 >
                   <XCircle size={24} color="#ffffff" />
-                  <Text style={styles.optionButtonText}>Absent</Text>
-                  <Text style={styles.optionWageText}>₹0</Text>
+                  <Text style={styles.optionButtonText}>{t('absent')}</Text>
+                  <Text style={styles.optionWageText}>
+                    {CalculationUtils.formatCurrency(0, settings.currency)}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -309,6 +311,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8fafc',
   },
+  darkContainer: {
+    backgroundColor: '#111827',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -321,10 +326,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1f2937',
   },
+  darkText: {
+    color: '#f9fafb',
+  },
   subtitle: {
     fontSize: 16,
     color: '#6b7280',
     marginTop: 2,
+  },
+  darkSubtext: {
+    color: '#9ca3af',
   },
   dateButton: {
     flexDirection: 'row',
@@ -333,6 +344,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
+  },
+  darkDateButton: {
+    backgroundColor: '#1e3a8a',
   },
   dateButtonText: {
     color: '#2563eb',
@@ -354,6 +368,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
     borderRadius: 8,
     alignItems: 'center',
+  },
+  darkNavButton: {
+    backgroundColor: '#374151',
   },
   navButtonText: {
     fontSize: 14,
@@ -381,6 +398,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 12,
     marginBottom: 8,
+  },
+  darkCard: {
+    backgroundColor: '#1f2937',
   },
   summaryItem: {
     alignItems: 'center',
@@ -439,6 +459,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
     borderRadius: 6,
   },
+  darkUnmarkedStatus: {
+    backgroundColor: '#374151',
+  },
   unmarkedText: {
     fontSize: 12,
     color: '#6b7280',
@@ -452,6 +475,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: '#6b7280',
+    marginTop: 16,
     marginBottom: 8,
   },
   emptyStateSubtext: {
@@ -484,6 +508,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 24,
+  },
+  darkLaborDetail: {
+    backgroundColor: '#374151',
   },
   laborDetailName: {
     fontSize: 20,
@@ -529,35 +556,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#ffffff',
-  },
-  datePickerModal: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  datePickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  datePickerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1f2937',
-  },
-  datePickerCancel: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  datePickerDone: {
-    fontSize: 16,
-    color: '#2563eb',
-    fontWeight: '600',
-  },
-  datePickerIOS: {
-    flex: 1,
   },
   datePickerModal: {
     flex: 1,

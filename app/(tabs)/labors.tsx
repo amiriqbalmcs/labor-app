@@ -40,13 +40,13 @@ export default function LaborsScreen() {
 
   const handleSave = async () => {
     if (!formData.name.trim() || !formData.phone.trim() || !formData.dailyWage.trim()) {
-      Alert.alert('Error', 'Please fill all fields');
+      Alert.alert(t('error'), t('fillAllFields'));
       return;
     }
 
     const dailyWage = parseFloat(formData.dailyWage);
     if (isNaN(dailyWage) || dailyWage <= 0) {
-      Alert.alert('Error', 'Please enter a valid daily wage');
+      Alert.alert(t('error'), 'Please enter a valid daily wage');
       return;
     }
 
@@ -66,7 +66,7 @@ export default function LaborsScreen() {
       }
       setModalVisible(false);
     } catch (error) {
-      Alert.alert('Error', 'Failed to save labor');
+      Alert.alert(t('error'), 'Failed to save labor');
     }
   };
 
@@ -77,12 +77,12 @@ export default function LaborsScreen() {
 
   const handleDelete = (labor: Labor) => {
     Alert.alert(
-      'Delete Labor',
-      `Are you sure you want to delete ${labor.name}?`,
+      t('deleteLabor'),
+      `${t('areYouSureDelete')} ${labor.name}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('delete'),
           style: 'destructive',
           onPress: () => deleteLabor(labor.id),
         },
@@ -111,11 +111,11 @@ export default function LaborsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
       <View style={styles.header}>
           <View>
-             <Text style={styles.title}>{t('labors')}</Text>
-            <Text style={styles.subtitle}>{t('addLabor')}</Text>
+             <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('labors')}</Text>
+            <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>{labors.length} {t('totalLaborsCount')}</Text>
           </View>
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
           <UserPlus size={20} color="#ffffff" />
@@ -127,36 +127,38 @@ export default function LaborsScreen() {
         {labors.length === 0 ? (
           <View style={styles.emptyState}>
             <Users size={48} color="#d1d5db" />
-          <Text style={styles.emptyStateText}>{t('noLaborsAdded')}</Text>
-          <Text style={styles.emptyStateSubtext}>{t('addFirstLabor')}</Text>
+          <Text style={[styles.emptyStateText, settings.theme === 'dark' && styles.darkText]}>{t('noLaborsAdded')}</Text>
+          <Text style={[styles.emptyStateSubtext, settings.theme === 'dark' && styles.darkSubtext]}>{t('addFirstLabor')}</Text>
           </View>
         ) : (
           labors.map((labor) => {
             const summary = getLaborSummary(labor);
             return (
               <TouchableOpacity key={labor.id} onPress={() => openProfile(labor)}>
-                <Card style={styles.laborCard}>
+                <Card style={[styles.laborCard, settings.theme === 'dark' && styles.darkCard]}>
                 <View style={styles.laborHeader}>
                   <View style={styles.laborInfo}>
-                    <Text style={styles.laborName}>{labor.name}</Text>
+                    <Text style={[styles.laborName, settings.theme === 'dark' && styles.darkText]}>{labor.name}</Text>
                     <View style={styles.laborDetails}>
-                      <Phone size={16} color="#6b7280" />
-                      <Text style={styles.laborPhone}>{labor.phone}</Text>
+                      <Phone size={16} color={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'} />
+                      <Text style={[styles.laborPhone, settings.theme === 'dark' && styles.darkSubtext]}>{labor.phone}</Text>
                     </View>
                     <View style={styles.laborDetails}>
-                      <IndianRupee size={16} color="#6b7280" />
-                      <Text style={styles.laborWage}>{CalculationUtils.formatCurrency(labor.dailyWage)}/day</Text>
+                      <IndianRupee size={16} color={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'} />
+                      <Text style={[styles.laborWage, settings.theme === 'dark' && styles.darkSubtext]}>
+                        {CalculationUtils.formatCurrency(labor.dailyWage, settings.currency)}/day
+                      </Text>
                     </View>
                   </View>
                   <View style={styles.actions}>
                     <TouchableOpacity
-                      style={styles.actionButton}
+                      style={[styles.actionButton, settings.theme === 'dark' && styles.darkActionButton]}
                       onPress={() => openEditModal(labor)}
                     >
                       <Edit3 size={18} color="#2563eb" />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={styles.actionButton}
+                      style={[styles.actionButton, settings.theme === 'dark' && styles.darkActionButton]}
                       onPress={() => handleDelete(labor)}
                     >
                       <Trash2 size={18} color="#dc2626" />
@@ -166,17 +168,21 @@ export default function LaborsScreen() {
 
                 <View style={styles.laborSummary}>
                   <View style={styles.summaryItem}>
-                   <Text style={styles.summaryLabel}>{t('earned')}</Text>
-                    <Text style={styles.summaryValue}>{CalculationUtils.formatCurrency(summary.totalEarned)}</Text>
+                   <Text style={[styles.summaryLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('earned')}</Text>
+                    <Text style={[styles.summaryValue, settings.theme === 'dark' && styles.darkText]}>
+                      {CalculationUtils.formatCurrency(summary.totalEarned, settings.currency)}
+                    </Text>
                   </View>
                   <View style={styles.summaryItem}>
-                   <Text style={styles.summaryLabel}>{t('paid')}</Text>
-                    <Text style={styles.summaryValue}>{CalculationUtils.formatCurrency(summary.totalPaid)}</Text>
+                   <Text style={[styles.summaryLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('paid')}</Text>
+                    <Text style={[styles.summaryValue, settings.theme === 'dark' && styles.darkText]}>
+                      {CalculationUtils.formatCurrency(summary.totalPaid, settings.currency)}
+                    </Text>
                   </View>
                   <View style={styles.summaryItem}>
-                   <Text style={styles.summaryLabel}>{t('pending')}</Text>
+                   <Text style={[styles.summaryLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('pending')}</Text>
                     <Text style={[styles.summaryValue, { color: summary.pendingBalance > 0 ? '#dc2626' : '#16a34a' }]}>
-                      {CalculationUtils.formatCurrency(summary.pendingBalance)}
+                      {CalculationUtils.formatCurrency(summary.pendingBalance, settings.currency)}
                     </Text>
                   </View>
                 </View>
@@ -188,56 +194,59 @@ export default function LaborsScreen() {
       </ScrollView>
 
       <Modal visible={modalVisible} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>
+        <SafeAreaView style={[styles.modalContainer, settings.theme === 'dark' && styles.darkContainer]}>
+          <View style={[styles.modalHeader, settings.theme === 'dark' && { borderBottomColor: '#374151' }]}>
+            <Text style={[styles.modalTitle, settings.theme === 'dark' && styles.darkText]}>
               {editingLabor ? t('editLabor') : t('addNewLabor')}
             </Text>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <X size={24} color="#6b7280" />
+              <X size={24} color={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.modalContent}>
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('fullName')}</Text>
+              <Text style={[styles.inputLabel, settings.theme === 'dark' && styles.darkText]}>{t('fullName')}</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, settings.theme === 'dark' && styles.darkInput]}
                 value={formData.name}
                 onChangeText={(text) => setFormData({ ...formData, name: text })}
                 placeholder={t('enterFullName')}
+                placeholderTextColor={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'}
                 autoCapitalize="words"
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('phoneNumber')}</Text>
+              <Text style={[styles.inputLabel, settings.theme === 'dark' && styles.darkText]}>{t('phoneNumber')}</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, settings.theme === 'dark' && styles.darkInput]}
                 value={formData.phone}
                 onChangeText={(text) => setFormData({ ...formData, phone: text })}
                 placeholder={t('enterPhoneNumber')}
+                placeholderTextColor={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'}
                 keyboardType="phone-pad"
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('dailyWage')}</Text>
+              <Text style={[styles.inputLabel, settings.theme === 'dark' && styles.darkText]}>{t('dailyWage')}</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, settings.theme === 'dark' && styles.darkInput]}
                 value={formData.dailyWage}
                 onChangeText={(text) => setFormData({ ...formData, dailyWage: text })}
                 placeholder={t('enterDailyWage')}
+                placeholderTextColor={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'}
                 keyboardType="numeric"
               />
             </View>
 
             <View style={styles.modalActions}>
               <TouchableOpacity
-                style={styles.cancelButton}
+                style={[styles.cancelButton, settings.theme === 'dark' && styles.darkCancelButton]}
                 onPress={() => setModalVisible(false)}
               >
-                <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
+                <Text style={[styles.cancelButtonText, settings.theme === 'dark' && styles.darkSubtext]}>{t('cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                 <Text style={styles.saveButtonText}>
@@ -251,62 +260,62 @@ export default function LaborsScreen() {
 
       {/* Labor Profile Modal */}
       <Modal visible={profileModalVisible} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{t('laborProfile')}</Text>
+        <SafeAreaView style={[styles.modalContainer, settings.theme === 'dark' && styles.darkContainer]}>
+          <View style={[styles.modalHeader, settings.theme === 'dark' && { borderBottomColor: '#374151' }]}>
+            <Text style={[styles.modalTitle, settings.theme === 'dark' && styles.darkText]}>{t('laborProfile')}</Text>
             <TouchableOpacity onPress={() => setProfileModalVisible(false)}>
-              <X size={24} color="#6b7280" />
+              <X size={24} color={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'} />
             </TouchableOpacity>
           </View>
 
           {selectedLabor && (
             <ScrollView style={styles.profileContent}>
               {/* Labor Info */}
-              <Card style={styles.profileSection}>
-                <Text style={styles.profileSectionTitle}>{t('personalInformation')}</Text>
+              <Card style={[styles.profileSection, settings.theme === 'dark' && styles.darkCard]}>
+                <Text style={[styles.profileSectionTitle, settings.theme === 'dark' && styles.darkText]}>{t('personalInformation')}</Text>
                 <View style={styles.profileInfoRow}>
-                  <Text style={styles.profileLabel}>{t('name')}:</Text>
-                  <Text style={styles.profileValue}>{selectedLabor.name}</Text>
+                  <Text style={[styles.profileLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('name')}:</Text>
+                  <Text style={[styles.profileValue, settings.theme === 'dark' && styles.darkText]}>{selectedLabor.name}</Text>
                 </View>
                 <View style={styles.profileInfoRow}>
-                  <Text style={styles.profileLabel}>{t('phone')}:</Text>
-                  <Text style={styles.profileValue}>{selectedLabor.phone}</Text>
+                  <Text style={[styles.profileLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('phone')}:</Text>
+                  <Text style={[styles.profileValue, settings.theme === 'dark' && styles.darkText]}>{selectedLabor.phone}</Text>
                 </View>
                 <View style={styles.profileInfoRow}>
-                  <Text style={styles.profileLabel}>{t('dailyWage')}:</Text>
-                  <Text style={styles.profileValue}>
-                    {CalculationUtils.formatCurrency(selectedLabor.dailyWage)}
+                  <Text style={[styles.profileLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('dailyWage')}:</Text>
+                  <Text style={[styles.profileValue, settings.theme === 'dark' && styles.darkText]}>
+                    {CalculationUtils.formatCurrency(selectedLabor.dailyWage, settings.currency)}
                   </Text>
                 </View>
               </Card>
 
               {/* Financial Summary */}
-              <Card style={styles.profileSection}>
-                <Text style={styles.profileSectionTitle}>{t('financialSummary')}</Text>
+              <Card style={[styles.profileSection, settings.theme === 'dark' && styles.darkCard]}>
+                <Text style={[styles.profileSectionTitle, settings.theme === 'dark' && styles.darkText]}>{t('financialSummary')}</Text>
                 {(() => {
                   const summary = getLaborSummary(selectedLabor);
                   return (
                     <View style={styles.financialGrid}>
                       <View style={styles.financialItem}>
-                        <Text style={styles.financialValue}>
-                          {CalculationUtils.formatCurrency(summary.totalEarned)}
+                        <Text style={[styles.financialValue, settings.theme === 'dark' && styles.darkText]}>
+                          {CalculationUtils.formatCurrency(summary.totalEarned, settings.currency)}
                         </Text>
-                        <Text style={styles.financialLabel}>{t('totalEarned')}</Text>
+                        <Text style={[styles.financialLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('totalEarned')}</Text>
                       </View>
                       <View style={styles.financialItem}>
-                        <Text style={styles.financialValue}>
-                          {CalculationUtils.formatCurrency(summary.totalPaid)}
+                        <Text style={[styles.financialValue, settings.theme === 'dark' && styles.darkText]}>
+                          {CalculationUtils.formatCurrency(summary.totalPaid, settings.currency)}
                         </Text>
-                        <Text style={styles.financialLabel}>{t('totalPaid')}</Text>
+                        <Text style={[styles.financialLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('totalPaid')}</Text>
                       </View>
                       <View style={styles.financialItem}>
                         <Text style={[
                           styles.financialValue,
                           { color: summary.pendingBalance > 0 ? '#dc2626' : '#16a34a' }
                         ]}>
-                          {CalculationUtils.formatCurrency(summary.pendingBalance)}
+                          {CalculationUtils.formatCurrency(summary.pendingBalance, settings.currency)}
                         </Text>
-                        <Text style={styles.financialLabel}>{t('pending')}</Text>
+                        <Text style={[styles.financialLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('pending')}</Text>
                       </View>
                     </View>
                   );
@@ -314,31 +323,31 @@ export default function LaborsScreen() {
               </Card>
 
               {/* Payment History */}
-              <Card style={styles.profileSection}>
-                <Text style={styles.profileSectionTitle}>{t('paymentHistory')}</Text>
+              <Card style={[styles.profileSection, settings.theme === 'dark' && styles.darkCard]}>
+                <Text style={[styles.profileSectionTitle, settings.theme === 'dark' && styles.darkText]}>{t('paymentHistory')}</Text>
                 {(() => {
                   const payments = getLaborPayments(selectedLabor.id);
                   return payments.length === 0 ? (
-                    <Text style={styles.noDataText}>{t('noPayments')}</Text>
+                    <Text style={[styles.noDataText, settings.theme === 'dark' && styles.darkSubtext]}>{t('noPayments')}</Text>
                   ) : (
                     <View style={styles.historyContainer}>
                       {payments.slice(0, 5).map((payment) => (
-                        <View key={payment.id} style={styles.historyItem}>
+                        <View key={payment.id} style={[styles.historyItem, settings.theme === 'dark' && styles.darkHistoryItem]}>
                           <View style={styles.historyInfo}>
                             <Text style={styles.historyAmount}>
-                              {CalculationUtils.formatCurrency(payment.amount)}
+                              {CalculationUtils.formatCurrency(payment.amount, settings.currency)}
                             </Text>
-                            <Text style={styles.historyDate}>
+                            <Text style={[styles.historyDate, settings.theme === 'dark' && styles.darkSubtext]}>
                               {CalculationUtils.formatDate(payment.date)} • {payment.type}
                             </Text>
                             {payment.notes && (
-                              <Text style={styles.historyNotes}>{payment.notes}</Text>
+                              <Text style={[styles.historyNotes, settings.theme === 'dark' && styles.darkSubtext]}>{payment.notes}</Text>
                             )}
                           </View>
                         </View>
                       ))}
                       {payments.length > 5 && (
-                        <Text style={styles.moreHistoryText}>
+                        <Text style={[styles.moreHistoryText, settings.theme === 'dark' && styles.darkSubtext]}>
                           +{payments.length - 5} more payment{payments.length - 5 !== 1 ? 's' : ''}
                         </Text>
                       )}
@@ -348,27 +357,27 @@ export default function LaborsScreen() {
               </Card>
 
               {/* Attendance Summary */}
-              <Card style={styles.profileSection}>
-               <Text style={styles.profileSectionTitle}>{t('attendanceSummary')}</Text>
+              <Card style={[styles.profileSection, settings.theme === 'dark' && styles.darkCard]}>
+               <Text style={[styles.profileSectionTitle, settings.theme === 'dark' && styles.darkText]}>{t('attendanceSummary')}</Text>
                 {(() => {
                   const summary = getLaborSummary(selectedLabor);
                   return (
                     <View style={styles.attendanceGrid}>
                       <View style={styles.attendanceItem}>
-                        <Text style={styles.attendanceCount}>{summary.totalDaysPresent}</Text>
-                       <Text style={styles.attendanceLabel}>{t('present')}</Text>
+                        <Text style={[styles.attendanceCount, settings.theme === 'dark' && styles.darkText]}>{summary.totalDaysPresent}</Text>
+                       <Text style={[styles.attendanceLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('present')}</Text>
                       </View>
                       <View style={styles.attendanceItem}>
-                        <Text style={styles.attendanceCount}>{summary.totalDaysHalf}</Text>
-                       <Text style={styles.attendanceLabel}>{t('halfDay')}</Text>
+                        <Text style={[styles.attendanceCount, settings.theme === 'dark' && styles.darkText]}>{summary.totalDaysHalf}</Text>
+                       <Text style={[styles.attendanceLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('halfDay')}</Text>
                       </View>
                       <View style={styles.attendanceItem}>
-                        <Text style={styles.attendanceCount}>{summary.totalDaysAbsent}</Text>
-                       <Text style={styles.attendanceLabel}>{t('absent')}</Text>
+                        <Text style={[styles.attendanceCount, settings.theme === 'dark' && styles.darkText]}>{summary.totalDaysAbsent}</Text>
+                       <Text style={[styles.attendanceLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('absent')}</Text>
                       </View>
                       <View style={styles.attendanceItem}>
-                        <Text style={styles.attendanceCount}>{summary.totalDaysWorked}</Text>
-                       <Text style={styles.attendanceLabel}>{t('total')}</Text>
+                        <Text style={[styles.attendanceCount, settings.theme === 'dark' && styles.darkText]}>{summary.totalDaysWorked}</Text>
+                       <Text style={[styles.attendanceLabel, settings.theme === 'dark' && styles.darkSubtext]}>{t('total')}</Text>
                       </View>
                     </View>
                   );
@@ -387,6 +396,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8fafc',
   },
+  darkContainer: {
+    backgroundColor: '#111827',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -399,10 +411,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1f2937',
   },
+  darkText: {
+    color: '#f9fafb',
+  },
   subtitle: {
     fontSize: 16,
     color: '#6b7280',
     marginTop: 2,
+  },
+  darkSubtext: {
+    color: '#9ca3af',
   },
   addButton: {
     flexDirection: 'row',
@@ -419,6 +437,9 @@ const styles = StyleSheet.create({
   },
   laborCard: {
     marginBottom: 4,
+  },
+  darkCard: {
+    backgroundColor: '#1f2937',
   },
   laborHeader: {
     flexDirection: 'row',
@@ -458,6 +479,9 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 6,
     backgroundColor: '#f8fafc',
+  },
+  darkActionButton: {
+    backgroundColor: '#374151',
   },
   laborSummary: {
     flexDirection: 'row',
@@ -533,6 +557,12 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     backgroundColor: '#ffffff',
+    color: '#1f2937',
+  },
+  darkInput: {
+    backgroundColor: '#374151',
+    borderColor: '#4b5563',
+    color: '#f9fafb',
   },
   modalActions: {
     flexDirection: 'row',
@@ -546,6 +576,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#d1d5db',
     alignItems: 'center',
+  },
+  darkCancelButton: {
+    borderColor: '#4b5563',
   },
   cancelButtonText: {
     fontSize: 16,
@@ -618,6 +651,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderLeftWidth: 4,
     borderLeftColor: '#16a34a',
+  },
+  darkHistoryItem: {
+    backgroundColor: '#374151',
   },
   historyInfo: {
     flex: 1,

@@ -103,6 +103,15 @@ export const StorageUtils = {
     await this.savePaymentRecords(payments);
   },
 
+  async updatePaymentRecord(updatedPayment: PaymentRecord): Promise<void> {
+    const payments = await this.getPaymentRecords();
+    const index = payments.findIndex(payment => payment.id === updatedPayment.id);
+    if (index !== -1) {
+      payments[index] = updatedPayment;
+      await this.savePaymentRecords(payments);
+    }
+  },
+
   async deletePaymentRecord(paymentId: string): Promise<void> {
     const payments = await this.getPaymentRecords();
     const filteredPayments = payments.filter(payment => payment.id !== paymentId);

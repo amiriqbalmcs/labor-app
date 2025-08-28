@@ -15,6 +15,7 @@ interface DataContextType {
   deleteLabor: (id: string) => Promise<void>;
   markAttendance: (laborId: string, date: string, status: 'present' | 'absent' | 'half') => Promise<void>;
   addPayment: (payment: Omit<PaymentRecord, 'id' | 'createdAt'>) => Promise<void>;
+  updatePayment: (id: string, updates: Partial<PaymentRecord>) => Promise<void>;
   deletePayment: (paymentId: string) => Promise<void>;
   updateSettings: (settings: AppSettings) => Promise<void>;
   exportData: () => Promise<void>;
@@ -132,6 +133,15 @@ export function DataProvider({ children }: DataProviderProps) {
     await refreshData();
   };
 
+  const updatePayment = async (id: string, updates: Partial<PaymentRecord>) => {
+    const payment = paymentRecords.find(p => p.id === id);
+    if (payment) {
+      const updatedPayment = { ...payment, ...updates };
+      await StorageUtils.updatePaymentRecord(updatedPayment);
+      await refreshData();
+    }
+  };
+
   const deletePayment = async (paymentId: string) => {
     await StorageUtils.deletePaymentRecord(paymentId);
     await refreshData();
@@ -181,6 +191,7 @@ export function DataProvider({ children }: DataProviderProps) {
         deleteLabor,
         markAttendance,
         addPayment,
+        updatePayment,
         deletePayment,
         updateSettings,
         exportData,

@@ -1,22 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { X, IndianRupee, Calendar, ChevronDown } from 'lucide-react-native';
+import { X, IndianRupee, Calendar, ChevronDown, DollarSign } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Platform } from 'react-native';
-import { Labor } from '@/types';
+import { Labor, PaymentRecord } from '@/types';
 import { useData } from '@/contexts/DataContext';
 import { CalculationUtils } from '@/utils/calculations';
+import { useTranslation } from '@/utils/translations';
 
 interface PaymentModalProps {
   visible: boolean;
   onClose: () => void;
   selectedLabor?: Labor;
+  editingPayment?: PaymentRecord | null;
 }
 
-export function PaymentModal({ visible, onClose, selectedLabor }: PaymentModalProps) {
-  const { labors, addPayment, attendanceRecords, paymentRecords } = useData();
+export function PaymentModal({ visible, onClose, selectedLabor, editingPayment }: PaymentModalProps) {
+  const { labors, addPayment, updatePayment, attendanceRecords, paymentRecords, settings } = useData();
+  const { t } = useTranslation(settings.language);
   const [formData, setFormData] = useState({
     laborId: selectedLabor?.id || '',
     amount: '',
@@ -26,32 +29,57 @@ export function PaymentModal({ visible, onClose, selectedLabor }: PaymentModalPr
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  React.useEffect(() => {
-    if (selectedLabor) {
-      setFormData(prev => ({ ...prev, laborId: selectedLabor.id }));
+  useEffect(() => {
+    if (editingPayment) {
+      setFormData({
+        laborId: editingPayment.laborId,
+        amount: editingPayment.amount.toString(),
+        date: editingPayment.date,
+        type: editingPayment.type,
+        notes: editingPayment.notes || '',
+      });
+    } else if (selectedLabor) {
+      setFormData(prev => ({ 
+        ...prev, 
+        laborId: selectedLabor.id,
+        amount: '',
+        date: new Date().toISOString().split('T')[0],
+        type: 'daily',
+        notes: '',
+      }));
     }
-  }, [selectedLabor]);
+  }, [selectedLabor, editingPayment]);
 
   const handleSave = async () => {
     if (!formData.laborId || !formData.amount.trim()) {
-      Alert.alert('Error', 'Please select a labor and enter amount');
+      Alert.alert(t('error'), 'Please select a labor and enter amount');
       return;
     }
 
     const amount = parseFloat(formData.amount);
     if (isNaN(amount) || amount <= 0) {
-      Alert.alert('Error', 'Please enter a valid amount');
+      Alert.alert(t('error'), t('invalidAmount'));
       return;
     }
 
     try {
-      await addPayment({
-        laborId: formData.laborId,
-        amount,
-        date: formData.date,
-        type: formData.type,
-        notes: formData.notes.trim(),
-      });
+      if (editingPayment) {
+        await updatePayment(editingPayment.id, {
+          laborId: formData.laborId,
+          amount,
+          date: formData.date,
+          type: formData.type,
+          notes: formData.notes.trim(),
+        });
+      } else {
+        await addPayment({
+          laborId: formData.laborId,
+          amount,
+          date: formData.date,
+          type: formData.type,
+          notes: formData.notes.trim(),
+        });
+      }
       
       setFormData({
         laborId: selectedLabor?.id || '',
@@ -62,7 +90,7 @@ export function PaymentModal({ visible, onClose, selectedLabor }: PaymentModalPr
       });
       onClose();
     } catch (error) {
-      Alert.alert('Error', 'Failed to record payment');
+      Alert.alert(t('error'), 'Failed to record payment');
     }
   };
 
@@ -81,31 +109,47 @@ export function PaymentModal({ visible, onClose, selectedLabor }: PaymentModalPr
     ? CalculationUtils.calculateLaborSummary(selectedLaborData, attendanceRecords, paymentRecords)
     : null;
 
+  const getCurrencyIcon = () => {
+    switch (settings.currency) {
+      case 'USD':
+        return <DollarSign size={20} color={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'} />;
+      case 'EUR':
+        return <Text style={{ fontSize: 20, color: settings.theme === 'dark' ? '#9ca3af' : '#6b7280' }}>€</Text>;
+      case 'GBP':
+        return <Text style={{ fontSize: 20, color: settings.theme === 'dark' ? '#9ca3af' : '#6b7280' }}>£</Text>;
+      default:
+        return <IndianRupee size={20} color={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'} />;
+    }
+  };
+
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Record Payment</Text>
+      <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
+        <View style={[styles.header, settings.theme === 'dark' && { borderBottomColor: '#374151' }]}>
+          <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>
+            {editingPayment ? t('editPayment') : t('addNewPayment')}
+          </Text>
           <TouchableOpacity onPress={onClose}>
-            <X size={24} color="#6b7280" />
+            <X size={24} color={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'} />
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.content}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Select Labor</Text>
-            <View style={styles.pickerContainer}>
+            <Text style={[styles.label, settings.theme === 'dark' && styles.darkText]}>{t('selectLabor')}</Text>
+            <View style={[styles.pickerContainer, settings.theme === 'dark' && styles.darkPickerContainer]}>
               <Picker
                 selectedValue={formData.laborId}
                 onValueChange={(itemValue) => setFormData({ ...formData, laborId: itemValue })}
-                style={styles.picker}
+                style={[styles.picker, settings.theme === 'dark' && styles.darkPicker]}
                 itemStyle={styles.pickerItem}
+                enabled={!editingPayment}
               >
-                <Picker.Item label="Choose a labor..." value="" />
+                <Picker.Item label={t('selectLabor') + "..."} value="" />
                 {labors.map((labor) => (
                   <Picker.Item
                     key={labor.id}
-                    label={`${labor.name} - ₹${labor.dailyWage}/day`}
+                    label={`${labor.name} - ${CalculationUtils.formatCurrency(labor.dailyWage, settings.currency)}/day`}
                     value={labor.id}
                   />
                 ))}
@@ -114,19 +158,19 @@ export function PaymentModal({ visible, onClose, selectedLabor }: PaymentModalPr
           </View>
 
           {selectedLaborData && (
-            <View style={styles.selectedLaborInfo}>
-              <Text style={styles.selectedLaborName}>{selectedLaborData.name}</Text>
-              <Text style={styles.selectedLaborWage}>
-                Daily Wage: ₹{selectedLaborData.dailyWage}
+            <View style={[styles.selectedLaborInfo, settings.theme === 'dark' && styles.darkSelectedLaborInfo]}>
+              <Text style={[styles.selectedLaborName, settings.theme === 'dark' && styles.darkText]}>{selectedLaborData.name}</Text>
+              <Text style={[styles.selectedLaborWage, settings.theme === 'dark' && styles.darkSubtext]}>
+                {t('dailyWage')}: {CalculationUtils.formatCurrency(selectedLaborData.dailyWage, settings.currency)}
               </Text>
               {selectedLaborSummary && (
-                <View style={styles.pendingInfo}>
-                  <Text style={styles.pendingLabel}>Pending Balance:</Text>
+                <View style={[styles.pendingInfo, settings.theme === 'dark' && { borderTopColor: '#4b5563' }]}>
+                  <Text style={[styles.pendingLabel, settings.theme === 'dark' && styles.darkText]}>{t('pending')} Balance:</Text>
                   <Text style={[
                     styles.pendingAmount,
                     { color: selectedLaborSummary.pendingBalance > 0 ? '#dc2626' : '#16a34a' }
                   ]}>
-                    {CalculationUtils.formatCurrency(selectedLaborSummary.pendingBalance)}
+                    {CalculationUtils.formatCurrency(selectedLaborSummary.pendingBalance, settings.currency)}
                   </Text>
                 </View>
               )}
@@ -134,13 +178,13 @@ export function PaymentModal({ visible, onClose, selectedLabor }: PaymentModalPr
           )}
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Payment Date</Text>
+            <Text style={[styles.label, settings.theme === 'dark' && styles.darkText]}>{t('paymentDate')}</Text>
             <TouchableOpacity
-              style={styles.dateDisplay}
+              style={[styles.dateDisplay, settings.theme === 'dark' && styles.darkDateDisplay]}
               onPress={() => setShowDatePicker(true)}
             >
-                <Calendar size={20} color="#6b7280" />
-                <Text style={styles.dateDisplayText}>
+                <Calendar size={20} color={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'} />
+                <Text style={[styles.dateDisplayText, settings.theme === 'dark' && styles.darkText]}>
                   {CalculationUtils.formatDate(formData.date)}
                 </Text>
             </TouchableOpacity>
@@ -156,14 +200,14 @@ export function PaymentModal({ visible, onClose, selectedLabor }: PaymentModalPr
           {showDatePicker && (
             Platform.OS === 'ios' ? (
               <Modal visible={showDatePicker} animationType="slide" presentationStyle="pageSheet">
-                <SafeAreaView style={styles.datePickerModal}>
-                  <View style={styles.datePickerHeader}>
+                <SafeAreaView style={[styles.datePickerModal, settings.theme === 'dark' && styles.darkContainer]}>
+                  <View style={[styles.datePickerHeader, settings.theme === 'dark' && { borderBottomColor: '#374151' }]}>
                     <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                      <Text style={styles.datePickerCancel}>Cancel</Text>
+                      <Text style={[styles.datePickerCancel, settings.theme === 'dark' && styles.darkSubtext]}>{t('cancel')}</Text>
                     </TouchableOpacity>
-                    <Text style={styles.datePickerTitle}>Select Date</Text>
+                    <Text style={[styles.datePickerTitle, settings.theme === 'dark' && styles.darkText]}>{t('selectDate')}</Text>
                     <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                      <Text style={styles.datePickerDone}>Done</Text>
+                      <Text style={styles.datePickerDone}>{t('save')}</Text>
                     </TouchableOpacity>
                   </View>
                   <DateTimePicker
@@ -188,36 +232,39 @@ export function PaymentModal({ visible, onClose, selectedLabor }: PaymentModalPr
           )}
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Amount (₹)</Text>
-            <View style={styles.amountInputContainer}>
-              <IndianRupee size={20} color="#6b7280" />
+            <Text style={[styles.label, settings.theme === 'dark' && styles.darkText]}>{t('amount')} ({settings.currency})</Text>
+            <View style={[styles.amountInputContainer, settings.theme === 'dark' && styles.darkAmountInputContainer]}>
+              {getCurrencyIcon()}
               <TextInput
-                style={styles.amountInput}
+                style={[styles.amountInput, settings.theme === 'dark' && styles.darkAmountInput]}
                 value={formData.amount}
                 onChangeText={(text) => setFormData({ ...formData, amount: text })}
-                placeholder="Enter amount"
+                placeholder={t('amount')}
+                placeholderTextColor={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'}
                 keyboardType="numeric"
               />
             </View>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Payment Type</Text>
+            <Text style={[styles.label, settings.theme === 'dark' && styles.darkText]}>{t('paymentType')}</Text>
             <View style={styles.typeSelector}>
               {(['daily', 'weekly', 'monthly', 'partial'] as const).map((type) => (
                 <TouchableOpacity
                   key={type}
                   style={[
                     styles.typeOption,
+                    settings.theme === 'dark' && styles.darkTypeOption,
                     formData.type === type && styles.selectedTypeOption,
                   ]}
                   onPress={() => setFormData({ ...formData, type })}
                 >
                   <Text style={[
                     styles.typeOptionText,
+                    settings.theme === 'dark' && styles.darkTypeOptionText,
                     formData.type === type && styles.selectedTypeOptionText,
                   ]}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                    {t(type)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -225,23 +272,29 @@ export function PaymentModal({ visible, onClose, selectedLabor }: PaymentModalPr
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Notes (Optional)</Text>
+            <Text style={[styles.label, settings.theme === 'dark' && styles.darkText]}>{t('notes')} (Optional)</Text>
             <TextInput
-              style={styles.notesInput}
+              style={[styles.notesInput, settings.theme === 'dark' && styles.darkNotesInput]}
               value={formData.notes}
               onChangeText={(text) => setFormData({ ...formData, notes: text })}
               placeholder="Add notes about this payment"
+              placeholderTextColor={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'}
               multiline
               numberOfLines={3}
             />
           </View>
 
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+            <TouchableOpacity 
+              style={[styles.cancelButton, settings.theme === 'dark' && styles.darkCancelButton]} 
+              onPress={onClose}
+            >
+              <Text style={[styles.cancelButtonText, settings.theme === 'dark' && styles.darkSubtext]}>{t('cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Record Payment</Text>
+              <Text style={styles.saveButtonText}>
+                {editingPayment ? t('update') : 'Record'} {t('payments')}
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -256,6 +309,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
+  darkContainer: {
+    backgroundColor: '#111827',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -268,6 +324,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: '#1f2937',
+  },
+  darkText: {
+    color: '#f9fafb',
+  },
+  darkSubtext: {
+    color: '#9ca3af',
   },
   content: {
     flex: 1,
@@ -308,6 +370,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 20,
   },
+  darkSelectedLaborInfo: {
+    backgroundColor: '#1e3a8a',
+  },
   selectedLaborName: {
     fontSize: 18,
     fontWeight: '600',
@@ -343,8 +408,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     overflow: 'hidden',
   },
+  darkPickerContainer: {
+    backgroundColor: '#374151',
+    borderColor: '#4b5563',
+  },
   picker: {
     height: 60,
+    color: '#1f2937',
+  },
+  darkPicker: {
+    color: '#f9fafb',
   },
   pickerItem: {
     fontSize: 16,
@@ -361,6 +434,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: '#ffffff',
     marginBottom: 8,
+  },
+  darkDateDisplay: {
+    backgroundColor: '#374151',
+    borderColor: '#4b5563',
   },
   dateDisplayText: {
     fontSize: 16,
@@ -418,10 +495,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     backgroundColor: '#ffffff',
   },
+  darkAmountInputContainer: {
+    backgroundColor: '#374151',
+    borderColor: '#4b5563',
+  },
   amountInput: {
     flex: 1,
     padding: 12,
     fontSize: 16,
+    color: '#1f2937',
+  },
+  darkAmountInput: {
+    color: '#f9fafb',
   },
   typeSelector: {
     flexDirection: 'row',
@@ -436,6 +521,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
   },
+  darkTypeOption: {
+    backgroundColor: '#374151',
+    borderColor: '#4b5563',
+  },
   selectedTypeOption: {
     backgroundColor: '#2563eb',
     borderColor: '#2563eb',
@@ -443,6 +532,9 @@ const styles = StyleSheet.create({
   typeOptionText: {
     fontSize: 14,
     color: '#6b7280',
+  },
+  darkTypeOptionText: {
+    color: '#d1d5db',
   },
   selectedTypeOptionText: {
     color: '#ffffff',
@@ -455,6 +547,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#ffffff',
     textAlignVertical: 'top',
+    color: '#1f2937',
+  },
+  darkNotesInput: {
+    backgroundColor: '#374151',
+    borderColor: '#4b5563',
+    color: '#f9fafb',
   },
   actions: {
     flexDirection: 'row',
@@ -468,6 +566,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#d1d5db',
     alignItems: 'center',
+  },
+  darkCancelButton: {
+    borderColor: '#4b5563',
   },
   cancelButtonText: {
     fontSize: 16,

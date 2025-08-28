@@ -1,33 +1,41 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, IndianRupee, Calendar, FileText, Trash2 } from 'lucide-react-native';
+import { Plus, IndianRupee, Calendar, FileText, Trash2, Edit3 } from 'lucide-react-native';
 import { useData } from '@/contexts/DataContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Card } from '@/components/Card';
 import { PaymentModal } from '@/components/PaymentModal';
 import { CalculationUtils } from '@/utils/calculations';
 import { useTranslation } from '@/utils/translations';
+import { PaymentRecord } from '@/types';
 
 export default function PaymentsScreen() {
   const { labors, paymentRecords, deletePayment, isLoading, settings } = useData();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedLaborId, setSelectedLaborId] = useState<string>('');
+  const [editingPayment, setEditingPayment] = useState<PaymentRecord | null>(null);
   const { t } = useTranslation(settings.language);
 
   const handleDeletePayment = (paymentId: string) => {
     Alert.alert(
-      'Delete Payment',
+      t('deletePayment'),
       'Are you sure you want to delete this payment record?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('delete'),
           style: 'destructive',
           onPress: () => deletePayment(paymentId),
         },
       ]
     );
+  };
+
+  const handleEditPayment = (payment: PaymentRecord) => {
+    setEditingPayment(payment);
+    setSelectedLaborId(payment.laborId);
+    setModalVisible(true);
   };
 
   const getPaymentsByLabor = () => {
@@ -50,6 +58,19 @@ export default function PaymentsScreen() {
     return paymentRecords.reduce((sum, payment) => sum + payment.amount, 0);
   };
 
+  const getCurrencyIcon = () => {
+    switch (settings.currency) {
+      case 'USD':
+        return '$';
+      case 'EUR':
+        return '€';
+      case 'GBP':
+        return '£';
+      default:
+        return '₹';
+    }
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -58,20 +79,24 @@ export default function PaymentsScreen() {
   const totalPayments = getTotalPayments();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Payments</Text>
-          <Text style={styles.subtitle}>
-            Total: {CalculationUtils.formatCurrency(totalPayments)}
+          <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('payments')}</Text>
+          <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>
+            {t('total')}: {CalculationUtils.formatCurrency(totalPayments, settings.currency)}
           </Text>
         </View>
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => setModalVisible(true)}
+          onPress={() => {
+            setEditingPayment(null);
+            setSelectedLaborId('');
+            setModalVisible(true);
+          }}
         >
           <Plus size={20} color="#ffffff" />
-          <Text style={styles.addButtonText}>Add Payment</Text>
+          <Text style={styles.addButtonText}>{t('addPayment')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -79,25 +104,27 @@ export default function PaymentsScreen() {
         {paymentsByLabor.length === 0 ? (
           <View style={styles.emptyState}>
             <IndianRupee size={48} color="#d1d5db" />
-            <Text style={styles.emptyStateText}>{t('noPayments')}</Text>
-            <Text style={styles.emptyStateSubtext}>Start by recording your first payment</Text>
+            <Text style={[styles.emptyStateText, settings.theme === 'dark' && styles.darkText]}>{t('noPayments')}</Text>
+            <Text style={[styles.emptyStateSubtext, settings.theme === 'dark' && styles.darkSubtext]}>Start by recording your first payment</Text>
           </View>
         ) : (
           paymentsByLabor.map(({ labor, payments }) => (
-            <Card key={labor.id} style={styles.laborCard}>
+            <Card key={labor.id} style={[styles.laborCard, settings.theme === 'dark' && styles.darkCard]}>
               <View style={styles.laborHeader}>
                 <View>
-                  <Text style={styles.laborName}>{labor.name}</Text>
-                  <Text style={styles.laborInfo}>
+                  <Text style={[styles.laborName, settings.theme === 'dark' && styles.darkText]}>{labor.name}</Text>
+                  <Text style={[styles.laborInfo, settings.theme === 'dark' && styles.darkSubtext]}>
                     {payments.length} payment{payments.length !== 1 ? 's' : ''} • 
-                    Total: {CalculationUtils.formatCurrency(
-                      payments.reduce((sum, p) => sum + p.amount, 0)
+                    {t('total')}: {CalculationUtils.formatCurrency(
+                      payments.reduce((sum, p) => sum + p.amount, 0),
+                      settings.currency
                     )}
                   </Text>
                 </View>
                 <TouchableOpacity
-                  style={styles.quickPayButton}
+                  style={[styles.quickPayButton, settings.theme === 'dark' && styles.darkQuickPayButton]}
                   onPress={() => {
+                    setEditingPayment(null);
                     setSelectedLaborId(labor.id);
                     setModalVisible(true);
                   }}
@@ -108,32 +135,40 @@ export default function PaymentsScreen() {
 
               <View style={styles.paymentsContainer}>
                 {payments.slice(0, 3).map((payment) => (
-                  <View key={payment.id} style={styles.paymentItem}>
+                  <View key={payment.id} style={[styles.paymentItem, settings.theme === 'dark' && styles.darkPaymentItem]}>
                     <View style={styles.paymentInfo}>
                       <View style={styles.paymentHeader}>
                         <Text style={styles.paymentAmount}>
-                          {CalculationUtils.formatCurrency(payment.amount)}
+                          {CalculationUtils.formatCurrency(payment.amount, settings.currency)}
                         </Text>
-                        <Text style={styles.paymentType}>{payment.type}</Text>
+                        <Text style={[styles.paymentType, settings.theme === 'dark' && styles.darkPaymentType]}>{payment.type}</Text>
                       </View>
-                      <Text style={styles.paymentDate}>
+                      <Text style={[styles.paymentDate, settings.theme === 'dark' && styles.darkSubtext]}>
                         {CalculationUtils.formatDate(payment.date)}
                       </Text>
                       {payment.notes && (
-                        <Text style={styles.paymentNotes}>{payment.notes}</Text>
+                        <Text style={[styles.paymentNotes, settings.theme === 'dark' && styles.darkSubtext]}>{payment.notes}</Text>
                       )}
                     </View>
-                    <TouchableOpacity
-                      style={styles.deleteButton}
-                      onPress={() => handleDeletePayment(payment.id)}
-                    >
-                      <Trash2 size={16} color="#dc2626" />
-                    </TouchableOpacity>
+                    <View style={styles.paymentActions}>
+                      <TouchableOpacity
+                        style={[styles.editButton, settings.theme === 'dark' && styles.darkEditButton]}
+                        onPress={() => handleEditPayment(payment)}
+                      >
+                        <Edit3 size={16} color="#2563eb" />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.deleteButton, settings.theme === 'dark' && styles.darkDeleteButton]}
+                        onPress={() => handleDeletePayment(payment.id)}
+                      >
+                        <Trash2 size={16} color="#dc2626" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 ))}
                 
                 {payments.length > 3 && (
-                  <Text style={styles.morePayments}>
+                  <Text style={[styles.morePayments, settings.theme === 'dark' && styles.darkSubtext]}>
                     +{payments.length - 3} more payment{payments.length - 3 !== 1 ? 's' : ''}
                   </Text>
                 )}
@@ -148,8 +183,10 @@ export default function PaymentsScreen() {
         onClose={() => {
           setModalVisible(false);
           setSelectedLaborId('');
+          setEditingPayment(null);
         }}
         selectedLabor={selectedLaborId ? labors.find(l => l.id === selectedLaborId) : undefined}
+        editingPayment={editingPayment}
       />
     </SafeAreaView>
   );
@@ -159,6 +196,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
+  },
+  darkContainer: {
+    backgroundColor: '#111827',
   },
   header: {
     flexDirection: 'row',
@@ -172,10 +212,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1f2937',
   },
+  darkText: {
+    color: '#f9fafb',
+  },
   subtitle: {
     fontSize: 16,
     color: '#6b7280',
     marginTop: 2,
+  },
+  darkSubtext: {
+    color: '#9ca3af',
   },
   addButton: {
     flexDirection: 'row',
@@ -192,6 +238,9 @@ const styles = StyleSheet.create({
   },
   laborCard: {
     marginBottom: 8,
+  },
+  darkCard: {
+    backgroundColor: '#1f2937',
   },
   laborHeader: {
     flexDirection: 'row',
@@ -214,6 +263,9 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#eff6ff',
   },
+  darkQuickPayButton: {
+    backgroundColor: '#1e3a8a',
+  },
   paymentsContainer: {
     gap: 12,
   },
@@ -226,6 +278,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderLeftWidth: 4,
     borderLeftColor: '#16a34a',
+  },
+  darkPaymentItem: {
+    backgroundColor: '#374151',
   },
   paymentInfo: {
     flex: 1,
@@ -249,6 +304,10 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 10,
   },
+  darkPaymentType: {
+    backgroundColor: '#4b5563',
+    color: '#d1d5db',
+  },
   paymentDate: {
     fontSize: 12,
     color: '#6b7280',
@@ -259,10 +318,25 @@ const styles = StyleSheet.create({
     color: '#4b5563',
     fontStyle: 'italic',
   },
+  paymentActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  editButton: {
+    padding: 8,
+    borderRadius: 6,
+    backgroundColor: '#eff6ff',
+  },
+  darkEditButton: {
+    backgroundColor: '#1e3a8a',
+  },
   deleteButton: {
     padding: 8,
     borderRadius: 6,
     backgroundColor: '#fef2f2',
+  },
+  darkDeleteButton: {
+    backgroundColor: '#7f1d1d',
   },
   morePayments: {
     fontSize: 12,

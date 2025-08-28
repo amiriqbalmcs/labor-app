@@ -6,13 +6,13 @@ import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { DataProvider, useData } from '@/contexts/DataContext';
 
 function RootLayoutContent() {
-  const { settings } = useData();
+  const { settings, isLoading } = useData();
 
   useEffect(() => {
-    if (!settings.hasCompletedOnboarding) {
+    if (!isLoading && !settings.hasCompletedOnboarding) {
       router.replace('/onboarding');
     } 
-  }, [settings.hasCompletedOnboarding]);
+  }, [settings.hasCompletedOnboarding, isLoading]);
 
   return (
     <>

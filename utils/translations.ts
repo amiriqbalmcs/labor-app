@@ -65,6 +65,7 @@ export const translations = {
     // Payments
     payments: 'Payments',
     addNewPayment: 'Add New Payment',
+    editPayment: 'Edit Payment',
     selectLabor: 'Select Labor',
     amount: 'Amount',
     paymentDate: 'Payment Date',
@@ -76,6 +77,7 @@ export const translations = {
     partial: 'Partial',
     paymentHistory: 'Payment History',
     noPayments: 'No payments recorded',
+    deletePayment: 'Delete Payment',
     
     // Reports
     thisWeek: 'This Week',
@@ -192,6 +194,7 @@ export const translations = {
     // Payments
     payments: 'ادائیگیاں',
     addNewPayment: 'نئی ادائیگی شامل کریں',
+    editPayment: 'ادائیگی ترمیم کریں',
     selectLabor: 'مزدور منتخب کریں',
     amount: 'رقم',
     paymentDate: 'ادائیگی کی تاریخ',
@@ -203,6 +206,7 @@ export const translations = {
     partial: 'جزوی',
     paymentHistory: 'ادائیگی کی ہسٹری',
     noPayments: 'کوئی ادائیگی ریکارڈ نہیں کی گئی',
+    deletePayment: 'ادائیگی حذف کریں',
     
     // Reports
     thisWeek: 'اس ہفتے',
@@ -319,6 +323,7 @@ export const translations = {
     // Payments
     payments: 'भुगतान',
     addNewPayment: 'नया भुगतान जोड़ें',
+    editPayment: 'भुगतान संपादित करें',
     selectLabor: 'मजदूर चुनें',
     amount: 'राशि',
     paymentDate: 'भुगतान तिथि',
@@ -330,6 +335,7 @@ export const translations = {
     partial: 'आंशिक',
     paymentHistory: 'भुगतान इतिहास',
     noPayments: 'कोई भुगतान दर्ज नहीं किया गया',
+    deletePayment: 'भुगतान हटाएँ',
     
     // Reports
     thisWeek: 'इस सप्ताह',
