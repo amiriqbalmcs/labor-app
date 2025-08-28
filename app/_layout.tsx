@@ -6,7 +6,7 @@ import { DataProvider, useData } from "@/contexts/DataContext";
 function RootLayoutContent() {
   const { settings } = useData();
 
-  // Redirect safely before navigator mounts
+  // Safely redirect if onboarding not complete
   if (!settings?.hasCompletedOnboarding) {
     return <Redirect href="/onboarding" />;
   }
@@ -24,8 +24,7 @@ function RootLayoutContent() {
 }
 
 export default function RootLayout() {
-  // Hook that sets up framework readiness
-  useFrameworkReady();
+  useFrameworkReady(); // Safe, only sets up once
 
   return (
     <DataProvider>
