@@ -10,8 +10,8 @@ function RootLayoutContent() {
 
   useEffect(() => {
     if (!settings.hasCompletedOnboarding) {
-      router.replace('/onboarding');
-    }
+        return <Redirect href="/onboarding" />;
+      }
   }, [settings.hasCompletedOnboarding]);
 
   return (
