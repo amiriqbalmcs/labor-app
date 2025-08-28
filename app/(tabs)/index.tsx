@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Users, UserCheck, UserX, Clock, IndianRupee, Plus, Download, TrendingUp } from 'lucide-react-native';
+import { Users, UserCheck, UserX, Clock, paddingVertical: 0,, Plus, Download, TrendingUp } from 'lucide-react-native';
 import { useData } from '@/contexts/DataContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { StatsCard } from '@/components/StatsCard';
