@@ -10,7 +10,7 @@ function RootLayoutContent() {
 
   useEffect(() => {
     if (!settings.hasCompletedOnboarding) {
-      router.replace('/onboarding');
+      //router.replace('/onboarding');
     } 
   }, [settings.hasCompletedOnboarding]);
 
