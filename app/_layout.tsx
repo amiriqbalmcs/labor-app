@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
