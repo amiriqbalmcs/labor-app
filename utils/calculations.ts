@@ -72,7 +72,7 @@ export const CalculationUtils = {
 
   formatCurrency(amount: number, currency: 'PKR' | 'INR' | 'USD' | 'EUR' | 'GBP' = 'INR'): string {
     const symbols = {
-      PKR: 'Rs',
+      PKR: 'Rs ',
       INR: '₹',
       USD: '$',
       EUR: '€',
