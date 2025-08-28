@@ -118,7 +118,7 @@ export function PaymentModal({ visible, onClose, selectedLabor, editingPayment }
       case 'GBP':
         return <Text style={{ fontSize: 20, color: settings.theme === 'dark' ? '#9ca3af' : '#6b7280' }}>£</Text>;
         case 'PKR':
-        return <Text style={{ fontSize: 20, color: settings.theme === 'dark' ? '#9ca3af' : '#6b7280' }}>Rs</Text>:
+        return <Text style={{ fontSize: 20, color: settings.theme === 'dark' ? '#9ca3af' : '#6b7280' }}>Rs</Text>;
       default:
         return <IndianRupee size={20} color={settings.theme === 'dark' ? '#9ca3af' : '#6b7280'} />;
     }
