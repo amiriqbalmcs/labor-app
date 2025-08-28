@@ -17,7 +17,7 @@ export function StatsCard({ title, value, icon, color = '#2563eb', theme = 'ligh
         {icon && <View style={[styles.iconContainer, { backgroundColor: `${color}15` }]}>{icon}</View>}
         <Text style={[styles.title, theme === 'dark' && styles.darkTitle]}>{title}</Text>
       </View>
-      <Text style={[styles.value, { color }]}>{value}</Text>
+      <Text style={[styles.value, { color }]}>{value} d</Text>
     </Card>
   );
 }
