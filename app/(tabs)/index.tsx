@@ -110,7 +110,7 @@ export default function DashboardScreen() {
           <StatsCard
             title={t('totalPendingAmount')}
             value={CalculationUtils.formatCurrency(dashboardStats.totalPendingAmount, settings.currency)}
-            icon={<IndianRupee size={24} color="#dc2626" />}
+            icon={<Banknote size={24} color="#dc2626" />}
             color="#dc2626"
             theme={settings.theme}
           />
