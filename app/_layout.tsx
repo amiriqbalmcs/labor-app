@@ -6,8 +6,8 @@ import { DataProvider, useData } from "@/contexts/DataContext";
 function RootLayoutContent() {
   const { settings } = useData();
 
-  // If onboarding is not completed, redirect before navigation tree mounts
-  if (!settings.hasCompletedOnboarding) {
+  // Redirect safely before navigator mounts
+  if (!settings?.hasCompletedOnboarding) {
     return <Redirect href="/onboarding" />;
   }
 
@@ -18,12 +18,13 @@ function RootLayoutContent() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="+not-found" />
       </Stack>
-      <StatusBar style={settings.theme === "dark" ? "light" : "dark"} />
+      <StatusBar style={settings?.theme === "dark" ? "light" : "dark"} />
     </>
   );
 }
 
 export default function RootLayout() {
+  // Hook that sets up framework readiness
   useFrameworkReady();
 
   return (
