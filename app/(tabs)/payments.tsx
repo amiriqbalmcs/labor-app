@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, IndianRupee, Calendar, FileText, Trash2, CreditCard as Edit3 } from 'lucide-react-native';
+import { Plus, Currency, Calendar, FileText, Trash2, CreditCard as Edit3 } from 'lucide-react-native';
 import { useData } from '@/contexts/DataContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Card } from '@/components/Card';
@@ -103,7 +103,7 @@ export default function PaymentsScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {paymentsByLabor.length === 0 ? (
           <View style={styles.emptyState}>
-            <IndianRupee size={48} color="#d1d5db" />
+            <Currency size={48} color="#d1d5db" />
             <Text style={[styles.emptyStateText, settings.theme === 'dark' && styles.darkText]}>{t('noPayments')}</Text>
             <Text style={[styles.emptyStateSubtext, settings.theme === 'dark' && styles.darkSubtext]}>Start by recording your first payment</Text>
           </View>
