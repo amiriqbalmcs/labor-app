@@ -103,7 +103,7 @@ export default function PaymentsScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {paymentsByLabor.length === 0 ? (
           <View style={styles.emptyState}>
-            <Currency size={48} color="#d1d5db" />
+            <Banknote size={48} color="#d1d5db" />
             <Text style={[styles.emptyStateText, settings.theme === 'dark' && styles.darkText]}>{t('noPayments')}</Text>
             <Text style={[styles.emptyStateSubtext, settings.theme === 'dark' && styles.darkSubtext]}>Start by recording your first payment</Text>
           </View>
