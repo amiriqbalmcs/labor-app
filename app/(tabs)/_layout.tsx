@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Users, Calendar, ChartBar as BarChart3, Banknote, Settings } from 'lucide-react-native';
+import { Users, Calendar, ChartBar as BarChart3, Banknote, Settings } from 'lucide-react-native'; 
 import { useData } from '@/contexts/DataContext';
 import { useTranslation } from '@/utils/translations';
 
