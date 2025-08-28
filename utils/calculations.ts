@@ -92,7 +92,7 @@ export const CalculationUtils = {
 
   formatDate(dateString: string): string {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
+    return date.toLocaleDateString('en-PK', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
