@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   },
   statsGrid: {
     flexDirection: 'row',
-    paddingHorizontal: 0,
+    paddingVertical: 0,
     gap: 0,
   },
   fullWidthCard: {
