@@ -103,7 +103,7 @@ export default function DashboardScreen() {
             icon={<Banknote size={20} color="#2563eb" />}
             color="#2563eb"
             theme={settings.theme}
-          />
+          /> 
         </View>
 
         <View style={styles.fullWidthCard}>
