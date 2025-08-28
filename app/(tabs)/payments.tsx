@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Currency, Calendar, FileText, Trash2, CreditCard as Edit3 } from 'lucide-react-native';
+import { Plus, Banknote, Calendar, FileText, Trash2, CreditCard as Edit3 } from 'lucide-react-native';
 import { useData } from '@/contexts/DataContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Card } from '@/components/Card';
