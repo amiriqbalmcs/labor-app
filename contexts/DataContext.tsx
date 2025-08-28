@@ -44,7 +44,7 @@ export function DataProvider({ children }: DataProviderProps) {
   const [settings, setSettings] = useState<AppSettings>({ 
     language: 'en', 
     theme: 'light', 
-    currency: 'INR',
+    currency: 'USD',
     hasCompletedOnboarding: false
   });
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
