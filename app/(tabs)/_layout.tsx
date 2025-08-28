@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Users, Calendar, ChartBar as BarChart3, IndianRupee, Settings } from 'lucide-react-native';
+import { Users, Calendar, ChartBar as BarChart3, Banknote, Settings } from 'lucide-react-native';
 import { useData } from '@/contexts/DataContext';
 import { useTranslation } from '@/utils/translations';
 
@@ -62,7 +62,7 @@ export default function TabLayout() {
         options={{
           title: t('payments'),
           tabBarIcon: ({ size, color }) => (
-            <IndianRupee size={size} color={color} />
+            <Banknote size={size} color={color} />
           ),
         }}
       />
