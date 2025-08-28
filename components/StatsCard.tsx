@@ -24,7 +24,7 @@ export function StatsCard({ title, value, icon, color = '#2563eb', theme = 'ligh
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0,
+    flex: 1,
     margin: 4,
   },
   darkContainer: {
