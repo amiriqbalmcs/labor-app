@@ -10,6 +10,7 @@ import { ExportUtils } from '@/utils/exportUtils';
 import { CalculationUtils } from '@/utils/calculations';
 import { useTranslation } from '@/utils/translations';
 
+
 export default function DashboardScreen() {
   const { dashboardStats, labors, attendanceRecords, paymentRecords, isLoading, refreshData, settings } = useData();
   const { t } = useTranslation(settings.language);
@@ -185,7 +186,6 @@ const styles = StyleSheet.create({
   },
   statsGrid: {
     flexDirection: 'row',
-    paddingVertical: 0,
     paddingHorizontal: 12,
   },
   fullWidthCard: {
