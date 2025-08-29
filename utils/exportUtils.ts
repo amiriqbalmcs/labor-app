@@ -61,6 +61,9 @@ export const ExportUtils = {
       return sum + summary.pendingBalance;
     }, 0);
 
+    // Get currency from settings - we'll need to pass this as a parameter
+    const currency = 'USD'; // This should be passed from the calling function
+
     // Generate HTML content for PDF
     const htmlContent = `
       <!DOCTYPE html>
@@ -97,15 +100,15 @@ export const ExportUtils = {
 
         <div class="summary">
           <div class="summary-item">
-            <div class="summary-value">${CalculationUtils.formatCurrency(totalEarned)}</div>
+            <div class="summary-value">${CalculationUtils.formatCurrency(totalEarned, currency)}</div>
             <div class="summary-label">Total Earned</div>
           </div>
           <div class="summary-item">
-            <div class="summary-value">${CalculationUtils.formatCurrency(totalPaid)}</div>
+            <div class="summary-value">${CalculationUtils.formatCurrency(totalPaid, currency)}</div>
             <div class="summary-label">Total Paid</div>
           </div>
           <div class="summary-item">
-            <div class="summary-value">${CalculationUtils.formatCurrency(totalPending)}</div>
+            <div class="summary-value">${CalculationUtils.formatCurrency(totalPending, currency)}</div>
             <div class="summary-label">Total Pending</div>
           </div>
         </div>
@@ -118,18 +121,18 @@ export const ExportUtils = {
               <div class="labor-item">
                 <div class="labor-name">${labor.name}</div>
                 <div class="labor-details">Phone: ${labor.phone}</div>
-                <div class="labor-details">Daily Wage: ${CalculationUtils.formatCurrency(labor.dailyWage)}</div>
+                <div class="labor-details">Daily Wage: ${CalculationUtils.formatCurrency(labor.dailyWage, currency)}</div>
                 <div class="labor-summary">
                   <div class="labor-stat">
-                    <div class="labor-stat-value">${CalculationUtils.formatCurrency(summary.totalEarned)}</div>
+                    <div class="labor-stat-value">${CalculationUtils.formatCurrency(summary.totalEarned, currency)}</div>
                     <div class="labor-stat-label">Earned</div>
                   </div>
                   <div class="labor-stat">
-                    <div class="labor-stat-value">${CalculationUtils.formatCurrency(summary.totalPaid)}</div>
+                    <div class="labor-stat-value">${CalculationUtils.formatCurrency(summary.totalPaid, currency)}</div>
                     <div class="labor-stat-label">Paid</div>
                   </div>
                   <div class="labor-stat">
-                    <div class="labor-stat-value">${CalculationUtils.formatCurrency(summary.pendingBalance)}</div>
+                    <div class="labor-stat-value">${CalculationUtils.formatCurrency(summary.pendingBalance, currency)}</div>
                     <div class="labor-stat-label">Pending</div>
                   </div>
                   <div class="labor-stat">
@@ -157,7 +160,8 @@ export const ExportUtils = {
     labors: Labor[],
     attendanceRecords: AttendanceRecord[],
     paymentRecords: PaymentRecord[],
-    filters?: ReportFilters
+    filters?: ReportFilters,
+    currency: 'PKR' | 'INR' | 'USD' | 'EUR' | 'GBP' = 'USD'
   ): Promise<void> {
     try {
       const htmlContent = await this.generatePDFContent(labors, attendanceRecords, paymentRecords, filters);

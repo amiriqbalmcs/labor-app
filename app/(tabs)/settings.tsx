@@ -61,7 +61,7 @@ export default function SettingsScreen() {
   const handleExportReport = async () => {
     try {
       setExporting(true);
-      await ExportUtils.exportToPDF(labors, attendanceRecords, paymentRecords);
+      await ExportUtils.exportToPDF(labors, attendanceRecords, paymentRecords, undefined, settings.currency);
       Alert.alert(t('success'), t('dataExported'));
     } catch (error) {
       Alert.alert(t('error'), t('exportFailed'));

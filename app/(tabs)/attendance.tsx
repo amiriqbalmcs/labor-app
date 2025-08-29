@@ -6,12 +6,13 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useData } from '@/contexts/DataContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Card } from '@/components/Card';
+import { WorkplaceSelector } from '@/components/WorkplaceSelector';
 import { Labor } from '@/types';
 import { CalculationUtils } from '@/utils/calculations';
 import { useTranslation } from '@/utils/translations';
 
 export default function AttendanceScreen() {
-  const { labors, attendanceRecords, markAttendance, isLoading, settings } = useData();
+  const { labors, attendanceRecords, markAttendance, isLoading, settings, activeWorkplace } = useData();
   const { t } = useTranslation(settings.language);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -85,10 +86,14 @@ export default function AttendanceScreen() {
 
   return (
     <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
+      <WorkplaceSelector theme={settings.theme} />
+      
       <View style={styles.header}>
         <View>
           <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('attendance')}</Text>
-          <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>{CalculationUtils.formatDate(selectedDate)}</Text>
+          <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>
+            {activeWorkplace?.name || 'No Workplace'} • {CalculationUtils.formatDate(selectedDate)}
+          </Text>
         </View>
         <TouchableOpacity
           style={[styles.dateButton, settings.theme === 'dark' && styles.darkDateButton]}

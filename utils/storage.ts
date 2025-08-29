@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Labor, AttendanceRecord, PaymentRecord, AppSettings } from '@/types';
+import { Labor, AttendanceRecord, PaymentRecord, AppSettings, Workplace } from '@/types';
 
 const STORAGE_KEYS = {
+  WORKPLACES: '@workplaces',
   LABORS: '@labors',
   ATTENDANCE: '@attendance',
   PAYMENTS: '@payments',
@@ -9,6 +10,46 @@ const STORAGE_KEYS = {
 };
 
 export const StorageUtils = {
+  // Workplace operations
+  async getWorkplaces(): Promise<Workplace[]> {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.WORKPLACES);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Error getting workplaces:', error);
+      return [];
+    }
+  },
+
+  async saveWorkplaces(workplaces: Workplace[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.WORKPLACES, JSON.stringify(workplaces));
+    } catch (error) {
+      console.error('Error saving workplaces:', error);
+    }
+  },
+
+  async addWorkplace(workplace: Workplace): Promise<void> {
+    const workplaces = await this.getWorkplaces();
+    workplaces.push(workplace);
+    await this.saveWorkplaces(workplaces);
+  },
+
+  async updateWorkplace(updatedWorkplace: Workplace): Promise<void> {
+    const workplaces = await this.getWorkplaces();
+    const index = workplaces.findIndex(workplace => workplace.id === updatedWorkplace.id);
+    if (index !== -1) {
+      workplaces[index] = updatedWorkplace;
+      await this.saveWorkplaces(workplaces);
+    }
+  },
+
+  async deleteWorkplace(workplaceId: string): Promise<void> {
+    const workplaces = await this.getWorkplaces();
+    const filteredWorkplaces = workplaces.filter(workplace => workplace.id !== workplaceId);
+    await this.saveWorkplaces(filteredWorkplaces);
+  },
+
   // Labor operations
   async getLabors(): Promise<Labor[]> {
     try {
@@ -150,7 +191,8 @@ export const StorageUtils = {
   // Backup and restore
   async exportAllData(): Promise<string> {
     try {
-      const [labors, attendance, payments, settings] = await Promise.all([
+      const [workplaces, labors, attendance, payments, settings] = await Promise.all([
+        this.getWorkplaces(),
         this.getLabors(),
         this.getAttendanceRecords(),
         this.getPaymentRecords(),
@@ -158,6 +200,7 @@ export const StorageUtils = {
       ]);
 
       const backupData = {
+        workplaces,
         labors,
         attendance,
         payments,
@@ -177,6 +220,7 @@ export const StorageUtils = {
     try {
       const backupData = JSON.parse(jsonData);
       
+      if (backupData.workplaces) await this.saveWorkplaces(backupData.workplaces);
       if (backupData.labors) await this.saveLabors(backupData.labors);
       if (backupData.attendance) await this.saveAttendanceRecords(backupData.attendance);
       if (backupData.payments) await this.savePaymentRecords(backupData.payments);

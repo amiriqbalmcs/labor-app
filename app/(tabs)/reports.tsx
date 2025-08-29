@@ -8,12 +8,13 @@ import { useTranslation } from '@/utils/translations';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Card } from '@/components/Card';
 import { StatsCard } from '@/components/StatsCard';
+import { WorkplaceSelector } from '@/components/WorkplaceSelector';
 import { ExportUtils } from '@/utils/exportUtils';
 import { CalculationUtils } from '@/utils/calculations';
 import { ReportFilters } from '@/types';
 
 export default function ReportsScreen() {
-  const { labors, attendanceRecords, paymentRecords, isLoading, settings } = useData();
+  const { labors, attendanceRecords, paymentRecords, isLoading, settings, activeWorkplace } = useData();
   const { t } = useTranslation(settings.language);
   const [filters, setFilters] = useState<ReportFilters>({ period: 'month' });
   const [exporting, setExporting] = useState(false);
@@ -23,7 +24,7 @@ export default function ReportsScreen() {
   const handleExportReport = async () => {
     try {
       setExporting(true);
-      await ExportUtils.exportToPDF(labors, attendanceRecords, paymentRecords, filters);
+      await ExportUtils.exportToPDF(labors, attendanceRecords, paymentRecords, filters, settings.currency);
       Alert.alert(t('success'), t('dataExported'));
     } catch (error) {
       Alert.alert(t('error'), t('exportFailed'));
@@ -153,10 +154,14 @@ export default function ReportsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
+      <WorkplaceSelector theme={settings.theme} />
+      
       <View style={styles.header}>
         <View>
           <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('reports')}</Text>
-          <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>{getPeriodLabel(filters.period)}</Text>
+          <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>
+            {activeWorkplace?.name || 'No Workplace'} • {getPeriodLabel(filters.period)}
+          </Text>
         </View>
         <TouchableOpacity
           style={[styles.exportButton, exporting && styles.disabledButton]}

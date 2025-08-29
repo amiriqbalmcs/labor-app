@@ -1,15 +1,21 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Labor, AttendanceRecord, PaymentRecord, DashboardStats, AppSettings } from '@/types';
+import { Labor, AttendanceRecord, PaymentRecord, DashboardStats, AppSettings, Workplace } from '@/types';
 import { StorageUtils } from '@/utils/storage';
 import { CalculationUtils } from '@/utils/calculations';
 
 interface DataContextType {
+  workplaces: Workplace[];
+  activeWorkplace: Workplace | null;
   labors: Labor[];
   attendanceRecords: AttendanceRecord[];
   paymentRecords: PaymentRecord[];
   dashboardStats: DashboardStats;
   settings: AppSettings;
   refreshData: () => Promise<void>;
+  addWorkplace: (workplace: Omit<Workplace, 'id' | 'createdAt'>) => Promise<void>;
+  updateWorkplace: (id: string, updates: Partial<Workplace>) => Promise<void>;
+  deleteWorkplace: (id: string) => Promise<void>;
+  setActiveWorkplace: (workplaceId: string) => Promise<void>;
   addLabor: (labor: Omit<Labor, 'id' | 'createdAt'>) => Promise<void>;
   updateLabor: (id: string, updates: Partial<Labor>) => Promise<void>;
   deleteLabor: (id: string) => Promise<void>;
@@ -38,6 +44,8 @@ interface DataProviderProps {
 }
 
 export function DataProvider({ children }: DataProviderProps) {
+  const [workplaces, setWorkplaces] = useState<Workplace[]>([]);
+  const [activeWorkplace, setActiveWorkplaceState] = useState<Workplace | null>(null);
   const [labors, setLabors] = useState<Labor[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
@@ -45,7 +53,8 @@ export function DataProvider({ children }: DataProviderProps) {
     language: 'en', 
     theme: 'light', 
     currency: 'USD',
-    hasCompletedOnboarding: false
+    hasCompletedOnboarding: false,
+    activeWorkplaceId: undefined
   });
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
     totalLabors: 0,
@@ -61,19 +70,38 @@ export function DataProvider({ children }: DataProviderProps) {
   const refreshData = async () => {
     try {
       setIsLoading(true);
-      const [laborData, attendanceData, paymentData, settingsData] = await Promise.all([
+      const [workplaceData, laborData, attendanceData, paymentData, settingsData] = await Promise.all([
+        StorageUtils.getWorkplaces(),
         StorageUtils.getLabors(),
         StorageUtils.getAttendanceRecords(),
         StorageUtils.getPaymentRecords(),
         StorageUtils.getSettings(),
       ]);
 
+      setWorkplaces(workplaceData);
       setLabors(laborData);
       setAttendanceRecords(attendanceData);
       setPaymentRecords(paymentData);
       setSettings(settingsData);
 
-      const stats = CalculationUtils.calculateDashboardStats(laborData, attendanceData, paymentData);
+      // Set active workplace
+      let currentWorkplace = null;
+      if (settingsData.activeWorkplaceId) {
+        currentWorkplace = workplaceData.find(w => w.id === settingsData.activeWorkplaceId) || null;
+      }
+      if (!currentWorkplace && workplaceData.length > 0) {
+        currentWorkplace = workplaceData[0];
+        await updateSettings({ ...settingsData, activeWorkplaceId: currentWorkplace.id });
+      }
+      setActiveWorkplaceState(currentWorkplace);
+
+      // Filter data by active workplace
+      const activeWorkplaceId = currentWorkplace?.id;
+      const filteredLabors = activeWorkplaceId ? laborData.filter(l => l.workplaceId === activeWorkplaceId) : [];
+      const filteredAttendance = activeWorkplaceId ? attendanceData.filter(a => a.workplaceId === activeWorkplaceId) : [];
+      const filteredPayments = activeWorkplaceId ? paymentData.filter(p => p.workplaceId === activeWorkplaceId) : [];
+
+      const stats = CalculationUtils.calculateDashboardStats(filteredLabors, filteredAttendance, filteredPayments);
       setDashboardStats(stats);
     } catch (error) {
       console.error('Error refreshing data:', error);
@@ -82,10 +110,57 @@ export function DataProvider({ children }: DataProviderProps) {
     }
   };
 
+  const addWorkplace = async (workplaceData: Omit<Workplace, 'id' | 'createdAt'>) => {
+    const newWorkplace: Workplace = {
+      ...workplaceData,
+      id: generateId(),
+      createdAt: new Date().toISOString(),
+      isActive: true,
+    };
+    await StorageUtils.addWorkplace(newWorkplace);
+    
+    // Set as active workplace if it's the first one
+    if (workplaces.length === 0) {
+      await updateSettings({ ...settings, activeWorkplaceId: newWorkplace.id });
+    }
+    
+    await refreshData();
+  };
+
+  const updateWorkplace = async (id: string, updates: Partial<Workplace>) => {
+    const workplace = workplaces.find(w => w.id === id);
+    if (workplace) {
+      const updatedWorkplace = { ...workplace, ...updates };
+      await StorageUtils.updateWorkplace(updatedWorkplace);
+      await refreshData();
+    }
+  };
+
+  const deleteWorkplace = async (id: string) => {
+    await StorageUtils.deleteWorkplace(id);
+    // If deleting active workplace, switch to another one
+    if (settings.activeWorkplaceId === id) {
+      const remainingWorkplaces = workplaces.filter(w => w.id !== id);
+      const newActiveId = remainingWorkplaces.length > 0 ? remainingWorkplaces[0].id : undefined;
+      await updateSettings({ ...settings, activeWorkplaceId: newActiveId });
+    }
+    await refreshData();
+  };
+
+  const setActiveWorkplace = async (workplaceId: string) => {
+    await updateSettings({ ...settings, activeWorkplaceId: workplaceId });
+    await refreshData();
+  };
+
   const addLabor = async (laborData: Omit<Labor, 'id' | 'createdAt'>) => {
+    if (!activeWorkplace) {
+      throw new Error('No active workplace selected');
+    }
+
     const newLabor: Labor = {
       ...laborData,
       id: generateId(),
+      workplaceId: activeWorkplace.id,
       createdAt: new Date().toISOString(),
     };
     await StorageUtils.addLabor(newLabor);
@@ -107,11 +182,16 @@ export function DataProvider({ children }: DataProviderProps) {
   };
 
   const markAttendance = async (laborId: string, date: string, status: 'present' | 'absent' | 'half') => {
+    if (!activeWorkplace) {
+      throw new Error('No active workplace selected');
+    }
+
     const labor = labors.find(l => l.id === laborId);
     if (labor) {
       const wage = CalculationUtils.calculateWage(labor.dailyWage, status);
       const attendanceRecord: AttendanceRecord = {
         id: generateId(),
+        workplaceId: activeWorkplace.id,
         laborId,
         date,
         status,
@@ -124,9 +204,14 @@ export function DataProvider({ children }: DataProviderProps) {
   };
 
   const addPayment = async (paymentData: Omit<PaymentRecord, 'id' | 'createdAt'>) => {
+    if (!activeWorkplace) {
+      throw new Error('No active workplace selected');
+    }
+
     const payment: PaymentRecord = {
       ...paymentData,
       id: generateId(),
+      workplaceId: activeWorkplace.id,
       createdAt: new Date().toISOString(),
     };
     await StorageUtils.addPaymentRecord(payment);
@@ -180,12 +265,18 @@ export function DataProvider({ children }: DataProviderProps) {
   return (
     <DataContext.Provider
       value={{
+        workplaces,
+        activeWorkplace,
         labors,
         attendanceRecords,
         paymentRecords,
         dashboardStats,
         settings,
         refreshData,
+        addWorkplace,
+        updateWorkplace,
+        deleteWorkplace,
+        setActiveWorkplace,
         addLabor,
         updateLabor,
         deleteLabor,

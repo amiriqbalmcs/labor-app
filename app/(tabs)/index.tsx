@@ -6,13 +6,14 @@ import { useData } from '@/contexts/DataContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { StatsCard } from '@/components/StatsCard';
 import { PaymentModal } from '@/components/PaymentModal';
+import { WorkplaceSelector } from '@/components/WorkplaceSelector';
 import { ExportUtils } from '@/utils/exportUtils';
 import { CalculationUtils } from '@/utils/calculations';
 import { useTranslation } from '@/utils/translations';
 
 
 export default function DashboardScreen() {
-  const { dashboardStats, labors, attendanceRecords, paymentRecords, isLoading, refreshData, settings } = useData();
+  const { dashboardStats, labors, attendanceRecords, paymentRecords, isLoading, refreshData, settings, activeWorkplace } = useData();
   const { t } = useTranslation(settings.language);
   const [refreshing, setRefreshing] = React.useState(false);
   const [paymentModalVisible, setPaymentModalVisible] = React.useState(false);
@@ -27,7 +28,7 @@ export default function DashboardScreen() {
   const handleQuickExport = async () => {
     try {
       setExporting(true);
-      await ExportUtils.exportToPDF(labors, attendanceRecords, paymentRecords);
+      await ExportUtils.exportToPDF(labors, attendanceRecords, paymentRecords, undefined, settings.currency);
       Alert.alert('Success', 'Report exported successfully');
     } catch (error) {
       Alert.alert('Error', 'Failed to export report');
@@ -46,13 +47,17 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
+      <WorkplaceSelector theme={settings.theme} />
+      
       <ScrollView 
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
           <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('laborManagement')}</Text>
-          <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>{t('todaysOverview')}</Text>
+          <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>
+            {activeWorkplace?.name || 'No Workplace'} • {t('todaysOverview')}
+          </Text>
         </View>
 
         <View style={styles.statsGrid}>

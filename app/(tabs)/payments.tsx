@@ -6,12 +6,13 @@ import { useData } from '@/contexts/DataContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Card } from '@/components/Card';
 import { PaymentModal } from '@/components/PaymentModal';
+import { WorkplaceSelector } from '@/components/WorkplaceSelector';
 import { CalculationUtils } from '@/utils/calculations';
 import { useTranslation } from '@/utils/translations';
 import { PaymentRecord } from '@/types';
 
 export default function PaymentsScreen() {
-  const { labors, paymentRecords, deletePayment, isLoading, settings } = useData();
+  const { labors, paymentRecords, deletePayment, isLoading, settings, activeWorkplace } = useData();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedLaborId, setSelectedLaborId] = useState<string>('');
   const [editingPayment, setEditingPayment] = useState<PaymentRecord | null>(null);
@@ -80,11 +81,13 @@ export default function PaymentsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
+      <WorkplaceSelector theme={settings.theme} />
+      
       <View style={styles.header}>
         <View>
           <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('payments')}</Text>
           <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>
-            {t('total')}: {CalculationUtils.formatCurrency(totalPayments, settings.currency)}
+            {activeWorkplace?.name || 'No Workplace'} • {t('total')}: {CalculationUtils.formatCurrency(totalPayments, settings.currency)}
           </Text>
         </View>
         <TouchableOpacity

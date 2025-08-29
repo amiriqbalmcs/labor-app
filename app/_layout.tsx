@@ -6,13 +6,28 @@ import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { DataProvider, useData } from '@/contexts/DataContext';
 
 function RootLayoutContent() {
-  const { settings, isLoading } = useData();
+  const { settings, isLoading, workplaces, addWorkplace } = useData();
 
   useEffect(() => {
-    if (!isLoading && !settings.hasCompletedOnboarding) {
-      router.replace('/onboarding');
-    } 
-  }, [settings.hasCompletedOnboarding, isLoading]);
+    const initializeApp = async () => {
+      if (!isLoading) {
+        // Create default workplace if none exists
+        if (workplaces.length === 0) {
+          await addWorkplace({
+            name: 'Default Workplace',
+            description: 'Your main workplace',
+            isActive: true,
+          });
+        }
+        
+        if (!settings.hasCompletedOnboarding) {
+          router.replace('/onboarding');
+        }
+      }
+    };
+
+    initializeApp();
+  }, [settings.hasCompletedOnboarding, isLoading, workplaces.length]);
 
   return (
     <>

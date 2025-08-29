@@ -24,6 +24,13 @@ export const translations = {
     exportData: 'Export Data',
     
     // Labors
+    workplace: 'Workplace',
+    selectWorkplace: 'Select Workplace',
+    addWorkplace: 'Add Workplace',
+    editWorkplace: 'Edit Workplace',
+    workplaceName: 'Workplace Name',
+    workplaceDescription: 'Description',
+    noWorkplace: 'No Workplace',
     totalLaborsCount: 'total labors',
     noLaborsAdded: 'No labors added yet',
     addFirstLabor: 'Add your first labor to get started',

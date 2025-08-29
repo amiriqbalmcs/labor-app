@@ -1,5 +1,14 @@
+export interface Workplace {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: string;
+  isActive: boolean;
+}
+
 export interface Labor {
   id: string;
+  workplaceId: string;
   name: string;
   phone: string;
   dailyWage: number;
@@ -8,6 +17,7 @@ export interface Labor {
 
 export interface AttendanceRecord {
   id: string;
+  workplaceId: string;
   laborId: string;
   date: string;
   status: 'present' | 'absent' | 'half';
@@ -17,6 +27,7 @@ export interface AttendanceRecord {
 
 export interface PaymentRecord {
   id: string;
+  workplaceId: string;
   laborId: string;
   amount: number;
   date: string;
@@ -49,6 +60,7 @@ export interface AppSettings {
   theme: 'light' | 'dark';
   currency: 'PKR'| 'INR' | 'USD' | 'EUR' | 'GBP';
   hasCompletedOnboarding: boolean;
+  activeWorkplaceId?: string;
 }
 
 export interface ReportFilters {

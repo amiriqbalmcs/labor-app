@@ -6,11 +6,12 @@ import { useData } from '@/contexts/DataContext';
 import { useTranslation } from '@/utils/translations';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Card } from '@/components/Card';
+import { WorkplaceSelector } from '@/components/WorkplaceSelector';
 import { Labor } from '@/types';
 import { CalculationUtils } from '@/utils/calculations';
 
 export default function LaborsScreen() {
-  const { labors, attendanceRecords, paymentRecords, addLabor, updateLabor, deleteLabor, isLoading, settings } = useData();
+  const { labors, attendanceRecords, paymentRecords, addLabor, updateLabor, deleteLabor, isLoading, settings, activeWorkplace } = useData();
   const { t } = useTranslation(settings.language);
   const [modalVisible, setModalVisible] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
@@ -112,10 +113,14 @@ export default function LaborsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
+      <WorkplaceSelector theme={settings.theme} />
+      
       <View style={styles.header}>
           <View>
              <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('labors')}</Text>
-            <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>{labors.length} {t('totalLaborsCount')}</Text>
+            <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>
+              {activeWorkplace?.name || 'No Workplace'} • {labors.length} {t('totalLaborsCount')}
+            </Text>
           </View>
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
           <UserPlus size={20} color="#ffffff" />
