@@ -86,13 +86,11 @@ export default function AttendanceScreen() {
 
   return (
     <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
-      <WorkplaceSelector theme={settings.theme} />
-      
       <View style={styles.header}>
-        <View>
+        <View style={styles.headerText}>
           <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('attendance')}</Text>
           <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>
-            {activeWorkplace?.name || 'No Workplace'} • {CalculationUtils.formatDate(selectedDate)}
+            {CalculationUtils.formatDate(selectedDate)}
           </Text>
         </View>
         <TouchableOpacity
@@ -100,9 +98,10 @@ export default function AttendanceScreen() {
           onPress={() => setShowDatePicker(true)}
         >
           <Calendar size={20} color="#2563eb" />
-          <Text style={styles.dateButtonText}>{t('changeDate')}</Text>
         </TouchableOpacity>
       </View>
+
+      <WorkplaceSelector theme={settings.theme} />
 
       {showDatePicker && Platform.OS === 'android' && (
         <DateTimePicker
@@ -324,7 +323,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    paddingBottom: 10,
+    paddingBottom: 16,
+  },
+  headerText: {
+    flex: 1,
+    marginRight: 12,
   },
   title: {
     fontSize: 28,
@@ -345,10 +348,11 @@ const styles = StyleSheet.create({
   dateButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#eff6ff',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   darkDateButton: {
     backgroundColor: '#1e3a8a',
