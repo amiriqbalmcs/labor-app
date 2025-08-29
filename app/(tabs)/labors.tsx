@@ -113,20 +113,19 @@ export default function LaborsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
-      <WorkplaceSelector theme={settings.theme} />
-      
       <View style={styles.header}>
-          <View>
+          <View style={styles.headerText}>
              <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('labors')}</Text>
             <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>
-              {activeWorkplace?.name || 'No Workplace'} • {labors.length} {t('totalLaborsCount')}
+              {labors.length} {t('totalLaborsCount')}
             </Text>
           </View>
-        <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
+        <TouchableOpacity style={[styles.addButton, settings.theme === 'dark' && styles.darkAddButton]} onPress={openAddModal}>
           <UserPlus size={20} color="#ffffff" />
-          <Text style={styles.addButtonText}>{t('addLabor')}</Text>
         </TouchableOpacity>
       </View>
+
+      <WorkplaceSelector theme={settings.theme} />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {labors.length === 0 ? (
@@ -409,7 +408,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    paddingBottom: 10,
+    paddingBottom: 16,
+  },
+  headerText: {
+    flex: 1,
+    marginRight: 12,
   },
   title: {
     fontSize: 28,
@@ -430,8 +433,20 @@ const styles = StyleSheet.create({
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#2563eb',
-    paddingHorizontal: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+  darkAddButton: {
+    backgroundColor: '#3b82f6',
+  },
+  addButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    marginLeft: 8,
+  },
     paddingVertical: 12,
     borderRadius: 8,
   },

@@ -47,7 +47,7 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
-      <WorkplaceSelector theme={settings.theme} />
+      <WorkplaceSelector theme={settings.theme} compact={false} />
       
       <ScrollView 
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -55,9 +55,7 @@ export default function DashboardScreen() {
       >
         <View style={styles.header}>
           <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('laborManagement')}</Text>
-          <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>
-            {activeWorkplace?.name || 'No Workplace'} • {t('todaysOverview')}
-          </Text>
+          <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>{t('todaysOverview')}</Text>
         </View>
 
         <View style={styles.statsGrid}>
