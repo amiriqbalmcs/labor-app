@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Labor, AttendanceRecord, PaymentRecord, DashboardStats, AppSettings, Workplace } from '@/types';
-import { StorageUtils } from '@/utils/storage';
+import { DatabaseUtils } from '@/utils/database';
 import { CalculationUtils } from '@/utils/calculations';
 
 interface DataContextType {
@@ -24,8 +24,9 @@ interface DataContextType {
   updatePayment: (id: string, updates: Partial<PaymentRecord>) => Promise<void>;
   deletePayment: (paymentId: string) => Promise<void>;
   updateSettings: (settings: AppSettings) => Promise<void>;
-  exportData: () => Promise<void>;
+  exportData: () => Promise<string>;
   importData: (jsonData: string) => Promise<void>;
+  resetAllData: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -70,18 +71,16 @@ export function DataProvider({ children }: DataProviderProps) {
   const refreshData = async () => {
     try {
       setIsLoading(true);
+      
       const [workplaceData, laborData, attendanceData, paymentData, settingsData] = await Promise.all([
-        StorageUtils.getWorkplaces(),
-        StorageUtils.getLabors(),
-        StorageUtils.getAttendanceRecords(),
-        StorageUtils.getPaymentRecords(),
-        StorageUtils.getSettings(),
+        DatabaseUtils.getWorkplaces(),
+        DatabaseUtils.getLabors(),
+        DatabaseUtils.getAttendanceRecords(),
+        DatabaseUtils.getPaymentRecords(),
+        DatabaseUtils.getSettings(),
       ]);
 
       setWorkplaces(workplaceData);
-      setLabors(laborData);
-      setAttendanceRecords(attendanceData);
-      setPaymentRecords(paymentData);
       setSettings(settingsData);
 
       // Set active workplace
@@ -101,6 +100,10 @@ export function DataProvider({ children }: DataProviderProps) {
       const filteredAttendance = activeWorkplaceId ? attendanceData.filter(a => a.workplaceId === activeWorkplaceId) : [];
       const filteredPayments = activeWorkplaceId ? paymentData.filter(p => p.workplaceId === activeWorkplaceId) : [];
 
+      setLabors(filteredLabors);
+      setAttendanceRecords(filteredAttendance);
+      setPaymentRecords(filteredPayments);
+
       const stats = CalculationUtils.calculateDashboardStats(filteredLabors, filteredAttendance, filteredPayments);
       setDashboardStats(stats);
     } catch (error) {
@@ -117,7 +120,7 @@ export function DataProvider({ children }: DataProviderProps) {
       createdAt: new Date().toISOString(),
       isActive: true,
     };
-    await StorageUtils.addWorkplace(newWorkplace);
+    await DatabaseUtils.addWorkplace(newWorkplace);
     
     // Set as active workplace if it's the first one
     if (workplaces.length === 0) {
@@ -131,13 +134,13 @@ export function DataProvider({ children }: DataProviderProps) {
     const workplace = workplaces.find(w => w.id === id);
     if (workplace) {
       const updatedWorkplace = { ...workplace, ...updates };
-      await StorageUtils.updateWorkplace(updatedWorkplace);
+      await DatabaseUtils.updateWorkplace(updatedWorkplace);
       await refreshData();
     }
   };
 
   const deleteWorkplace = async (id: string) => {
-    await StorageUtils.deleteWorkplace(id);
+    await DatabaseUtils.deleteWorkplace(id);
     // If deleting active workplace, switch to another one
     if (settings.activeWorkplaceId === id) {
       const remainingWorkplaces = workplaces.filter(w => w.id !== id);
@@ -163,7 +166,7 @@ export function DataProvider({ children }: DataProviderProps) {
       workplaceId: activeWorkplace.id,
       createdAt: new Date().toISOString(),
     };
-    await StorageUtils.addLabor(newLabor);
+    await DatabaseUtils.addLabor(newLabor);
     await refreshData();
   };
 
@@ -171,13 +174,13 @@ export function DataProvider({ children }: DataProviderProps) {
     const labor = labors.find(l => l.id === id);
     if (labor) {
       const updatedLabor = { ...labor, ...updates };
-      await StorageUtils.updateLabor(updatedLabor);
+      await DatabaseUtils.updateLabor(updatedLabor);
       await refreshData();
     }
   };
 
   const deleteLabor = async (id: string) => {
-    await StorageUtils.deleteLabor(id);
+    await DatabaseUtils.deleteLabor(id);
     await refreshData();
   };
 
@@ -198,7 +201,7 @@ export function DataProvider({ children }: DataProviderProps) {
         wage,
         createdAt: new Date().toISOString(),
       };
-      await StorageUtils.addAttendanceRecord(attendanceRecord);
+      await DatabaseUtils.addAttendanceRecord(attendanceRecord);
       await refreshData();
     }
   };
@@ -214,7 +217,7 @@ export function DataProvider({ children }: DataProviderProps) {
       workplaceId: activeWorkplace.id,
       createdAt: new Date().toISOString(),
     };
-    await StorageUtils.addPaymentRecord(payment);
+    await DatabaseUtils.addPaymentRecord(payment);
     await refreshData();
   };
 
@@ -222,26 +225,24 @@ export function DataProvider({ children }: DataProviderProps) {
     const payment = paymentRecords.find(p => p.id === id);
     if (payment) {
       const updatedPayment = { ...payment, ...updates };
-      await StorageUtils.updatePaymentRecord(updatedPayment);
+      await DatabaseUtils.updatePaymentRecord(updatedPayment);
       await refreshData();
     }
   };
 
   const deletePayment = async (paymentId: string) => {
-    await StorageUtils.deletePaymentRecord(paymentId);
+    await DatabaseUtils.deletePaymentRecord(paymentId);
     await refreshData();
   };
 
   const updateSettings = async (newSettings: AppSettings) => {
-    await StorageUtils.saveSettings(newSettings);
+    await DatabaseUtils.saveSettings(newSettings);
     setSettings(newSettings);
   };
 
-  const exportData = async () => {
+  const exportData = async (): Promise<string> => {
     try {
-      const backupData = await StorageUtils.exportAllData();
-      // In a real implementation, you'd use expo-sharing to share the file
-      console.log('Backup data ready for export');
+      return await DatabaseUtils.exportAllData();
     } catch (error) {
       console.error('Export failed:', error);
       throw error;
@@ -250,7 +251,7 @@ export function DataProvider({ children }: DataProviderProps) {
 
   const importData = async (jsonData: string) => {
     try {
-      await StorageUtils.importAllData(jsonData);
+      await DatabaseUtils.importAllData(jsonData);
       await refreshData();
     } catch (error) {
       console.error('Import failed:', error);
@@ -258,8 +259,28 @@ export function DataProvider({ children }: DataProviderProps) {
     }
   };
 
+  const resetAllData = async () => {
+    try {
+      await DatabaseUtils.resetAllData();
+      await refreshData();
+    } catch (error) {
+      console.error('Reset failed:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
-    refreshData();
+    const initializeDatabase = async () => {
+      try {
+        await DatabaseUtils.init();
+        await refreshData();
+      } catch (error) {
+        console.error('Failed to initialize database:', error);
+        setIsLoading(false);
+      }
+    };
+
+    initializeDatabase();
   }, []);
 
   return (
@@ -287,6 +308,7 @@ export function DataProvider({ children }: DataProviderProps) {
         updateSettings,
         exportData,
         importData,
+        resetAllData,
         isLoading,
       }}
     >

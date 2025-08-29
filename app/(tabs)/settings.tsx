@@ -10,9 +10,12 @@ import {
   FileText,
   Moon,
   Sun,
-  DollarSign
+  DollarSign,
+  RotateCcw
 } from 'lucide-react-native';
-// import * as DocumentPicker from 'expo-document-picker';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { useData } from '@/contexts/DataContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Card } from '@/components/Card';
@@ -23,11 +26,13 @@ export default function SettingsScreen() {
   const { 
     settings, 
     updateSettings, 
-    labors, 
-    attendanceRecords, 
-    paymentRecords, 
+    labors,
+    attendanceRecords,
+    paymentRecords,
+    workplaces,
     exportData, 
     importData, 
+    resetAllData,
     isLoading 
   } = useData();
   const { t } = useTranslation(settings.language);
@@ -49,7 +54,19 @@ export default function SettingsScreen() {
   const handleExportData = async () => {
     try {
       setExporting(true);
-      await ExportUtils.exportBackupData(labors, attendanceRecords, paymentRecords);
+      const backupData = await exportData();
+      
+      const fileName = `labor_backup_${new Date().toISOString().split('T')[0]}.json`;
+      const fileUri = FileSystem.documentDirectory + fileName;
+      
+      await FileSystem.writeAsStringAsync(fileUri, backupData);
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'application/json',
+          dialogTitle: 'Export Backup Data',
+        });
+      }
       Alert.alert(t('success'), t('dataExported'));
     } catch (error) {
       Alert.alert(t('error'), t('exportFailed'));
@@ -72,32 +89,59 @@ export default function SettingsScreen() {
 
   const handleImportData = async () => {
     try {
-      // const result = await DocumentPicker.getDocumentAsync({
-      //   type: 'application/json',
-      //   copyToCacheDirectory: true,
-      // });
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/json',
+        copyToCacheDirectory: true,
+      });
 
-      Alert.alert(
-        t('restoreData'),
-        'This will replace all existing data. Are you sure?',
-        [
-          { text: t('cancel'), style: 'cancel' },
-          {
-            text: t('restoreData'),
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                Alert.alert('Info', 'Import functionality would be implemented here');
-              } catch (error) {
-                Alert.alert(t('error'), t('importFailed'));
-              }
+      if (!result.canceled && result.assets[0]) {
+        const fileContent = await FileSystem.readAsStringAsync(result.assets[0].uri);
+        
+        Alert.alert(
+          t('restoreData'),
+          'This will replace all existing data. Are you sure?',
+          [
+            { text: t('cancel'), style: 'cancel' },
+            {
+              text: t('restoreData'),
+              style: 'destructive',
+              onPress: async () => {
+                try {
+                  await importData(fileContent);
+                  Alert.alert(t('success'), t('dataImported'));
+                } catch (error) {
+                  Alert.alert(t('error'), t('importFailed'));
+                }
+              },
             },
-          },
-        ]
-      );
+          ]
+        );
+      }
     } catch (error) {
       Alert.alert(t('error'), 'Failed to select file');
     }
+  };
+
+  const handleResetData = () => {
+    Alert.alert(
+      'Reset All Data',
+      'This will permanently delete all workplaces, labors, attendance, and payment records. This action cannot be undone. Are you sure?',
+      [
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: 'Reset All Data',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await resetAllData();
+              Alert.alert(t('success'), 'All data has been reset successfully');
+            } catch (error) {
+              Alert.alert(t('error'), 'Failed to reset data');
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (isLoading) {
@@ -253,6 +297,16 @@ export default function SettingsScreen() {
               {exporting ? t('loading') : t('exportReport')}
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionButton, styles.resetButton, settings.theme === 'dark' && styles.darkResetButton]}
+            onPress={handleResetData}
+          >
+            <RotateCcw size={20} color="#dc2626" />
+            <Text style={[styles.actionButtonText, styles.resetButtonText, settings.theme === 'dark' && styles.darkResetButtonText]}>
+              Reset All Data
+            </Text>
+          </TouchableOpacity>
         </Card>
 
         {/* App Information */}
@@ -279,6 +333,11 @@ export default function SettingsScreen() {
             <Text style={[styles.infoValue, settings.theme === 'dark' && styles.darkSubtext]}>
               {attendanceRecords.length + paymentRecords.length}
             </Text>
+          </View>
+          
+          <View style={styles.infoItem}>
+            <Text style={[styles.infoLabel, settings.theme === 'dark' && styles.darkText]}>Total Workplaces</Text>
+            <Text style={[styles.infoValue, settings.theme === 'dark' && styles.darkSubtext]}>{workplaces.length}</Text>
           </View>
         </Card>
       </ScrollView>
@@ -405,5 +464,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6b7280',
     fontWeight: '500',
+  },
+  resetButton: {
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    backgroundColor: '#fef2f2',
+  },
+  darkResetButton: {
+    borderColor: '#7f1d1d',
+    backgroundColor: '#450a0a',
+  },
+  resetButtonText: {
+    color: '#dc2626',
+  },
+  darkResetButtonText: {
+    color: '#fca5a5',
   },
 });

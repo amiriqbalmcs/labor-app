@@ -133,6 +133,10 @@ export const translations = {
     dataImported: 'Data imported successfully',
     exportFailed: 'Failed to export data',
     importFailed: 'Failed to import data',
+    resetAllData: 'Reset All Data',
+    resetDataConfirm: 'This will permanently delete all data. Are you sure?',
+    dataResetSuccess: 'All data has been reset successfully',
+    resetFailed: 'Failed to reset data',
   },
 
   ur: {
@@ -262,6 +266,10 @@ export const translations = {
     dataImported: 'ڈیٹا کامیابی سے درآمد ہوگیا',
     exportFailed: 'ڈیٹا ایکسپورٹ ناکام ہوگیا',
     importFailed: 'ڈیٹا درآمد ناکام ہوگیا',
+    resetAllData: 'تمام ڈیٹا ری سیٹ کریں',
+    resetDataConfirm: 'یہ تمام ڈیٹا مستقل طور پر حذف کر دے گا۔ کیا آپ واقعی چاہتے ہیں؟',
+    dataResetSuccess: 'تمام ڈیٹا کامیابی سے ری سیٹ ہو گیا',
+    resetFailed: 'ڈیٹا ری سیٹ ناکام ہوگیا',
   },
 
   hi: {
@@ -391,6 +399,10 @@ export const translations = {
     dataImported: 'डेटा सफलतापूर्वक आयात किया गया',
     exportFailed: 'डेटा निर्यात विफल',
     importFailed: 'डेटा आयात विफल',
+    resetAllData: 'सभी डेटा रीसेट करें',
+    resetDataConfirm: 'यह सभी डेटा स्थायी रूप से हटा देगा। क्या आप वाकई चाहते हैं?',
+    dataResetSuccess: 'सभी डेटा सफलतापूर्वक रीसेट हो गया',
+    resetFailed: 'डेटा रीसेट विफल',
   },
 };
 
