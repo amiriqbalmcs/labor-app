@@ -70,7 +70,7 @@ export const CalculationUtils = {
     };
   },
 
-  formatCurrency(amount: number, currency: 'PKR' | 'INR' | 'USD' | 'EUR' | 'GBP' = 'INR'): string {
+  formatCurrency(amount: number, currency: 'PKR' | 'INR' | 'USD' | 'EUR' | 'GBP' = 'USD'): string {
     const symbols = {
       PKR: 'Rs ',
       INR: '₹',
