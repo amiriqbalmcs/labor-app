@@ -154,23 +154,26 @@ export default function ReportsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
+      <WorkplaceSelector theme={settings.theme} />
+      
       <View style={styles.header}>
-        <View style={styles.headerText}>
+        <View>
           <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('reports')}</Text>
           <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>
-            {getPeriodLabel(filters.period)}
+            {activeWorkplace?.name || 'No Workplace'} • {getPeriodLabel(filters.period)}
           </Text>
         </View>
         <TouchableOpacity
-          style={[styles.exportButton, settings.theme === 'dark' && styles.darkExportButton, exporting && styles.disabledButton]}
+          style={[styles.exportButton, exporting && styles.disabledButton]}
           onPress={handleExportReport}
           disabled={exporting}
         >
           <Download size={18} color="#ffffff" />
+          <Text style={styles.exportButtonText}>
+            {exporting ? t('loading') : t('exportReport')}
+          </Text>
         </TouchableOpacity>
       </View>
-
-      <WorkplaceSelector theme={settings.theme} />
 
       <View style={styles.filterContainer}>
         {(['week', 'month', 'custom'] as const).map((period) => (
@@ -411,11 +414,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    paddingBottom: 16,
-  },
-  headerText: {
-    flex: 1,
-    marginRight: 12,
+    paddingBottom: 10,
   },
   title: {
     fontSize: 28,
@@ -436,14 +435,10 @@ const styles = StyleSheet.create({
   exportButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#2563eb',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-  },
-  darkExportButton: {
-    backgroundColor: '#3b82f6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
   disabledButton: {
     opacity: 0.5,

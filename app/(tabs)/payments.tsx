@@ -81,15 +81,17 @@ export default function PaymentsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, settings.theme === 'dark' && styles.darkContainer]}>
+      <WorkplaceSelector theme={settings.theme} />
+      
       <View style={styles.header}>
-        <View style={styles.headerText}>
+        <View>
           <Text style={[styles.title, settings.theme === 'dark' && styles.darkText]}>{t('payments')}</Text>
           <Text style={[styles.subtitle, settings.theme === 'dark' && styles.darkSubtext]}>
-            {t('total')}: {CalculationUtils.formatCurrency(totalPayments, settings.currency)}
+            {activeWorkplace?.name || 'No Workplace'} • {t('total')}: {CalculationUtils.formatCurrency(totalPayments, settings.currency)}
           </Text>
         </View>
         <TouchableOpacity
-          style={[styles.addButton, settings.theme === 'dark' && styles.darkAddButton]}
+          style={styles.addButton}
           onPress={() => {
             setEditingPayment(null);
             setSelectedLaborId('');
@@ -97,10 +99,9 @@ export default function PaymentsScreen() {
           }}
         >
           <Plus size={20} color="#ffffff" />
+          <Text style={styles.addButtonText}>{t('addPayment')}</Text>
         </TouchableOpacity>
       </View>
-
-      <WorkplaceSelector theme={settings.theme} />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {paymentsByLabor.length === 0 ? (
@@ -207,11 +208,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    paddingBottom: 16,
-  },
-  headerText: {
-    flex: 1,
-    marginRight: 12,
+    paddingBottom: 10,
   },
   title: {
     fontSize: 28,
@@ -232,14 +229,10 @@ const styles = StyleSheet.create({
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#2563eb',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-  },
-  darkAddButton: {
-    backgroundColor: '#3b82f6',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
   },
   addButtonText: {
     color: '#ffffff',
