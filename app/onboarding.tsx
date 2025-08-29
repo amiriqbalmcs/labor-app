@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Users, Calendar, IndianRupee, BarChart3, ChevronRight, ChevronLeft } from 'lucide-react-native';
+import { Users, Calendar, Banknote, BarChart3, ChevronRight, ChevronLeft } from 'lucide-react-native';
 import { useData } from '@/contexts/DataContext';
 
 const { width } = Dimensions.get('window');
@@ -24,7 +24,7 @@ const onboardingSteps = [
     id: 3,
     title: 'Manage Payments',
     description: 'Record payments made to workers and keep track of pending amounts. Never miss a payment again.',
-    icon: <IndianRupee size={80} color="#d97706" />,
+    icon: <Banknote size={80} color="#d97706" />,
   },
   {
     id: 4,
