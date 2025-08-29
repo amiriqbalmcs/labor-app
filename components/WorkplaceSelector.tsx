@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Building2, ChevronDown, Plus, X, Edit3, Trash2 } from 'lucide-react-native';
+import { Building2, ChevronDown, Plus, X, CreditCard as Edit3, Trash2 } from 'lucide-react-native';
 import { useData } from '@/contexts/DataContext';
 import { useTranslation } from '@/utils/translations';
 import { Workplace } from '@/types';
